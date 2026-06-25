@@ -1,44 +1,42 @@
 import { Send, Heart, Twitter } from "lucide-react";
+import { RichText } from "@/components/RichText";
 
-export default function Community({ social = {} }) {
-  const cards = [
-    {
-      key: "discord",
-      tag: "Inner Circle",
-      title: "Join the Discord",
-      copy: "A small, slow-burning community. Devlogs, sketches, and the occasional buried artefact.",
-      href: social.discord || "#",
-      icon: <Send size={18} />,
-      cta: "Enter Discord",
-    },
-    {
-      key: "twitter",
-      tag: "Signals",
-      title: "Follow on Twitter/X",
-      copy: "Short transmissions, art drops, and field photographs from the studio floor.",
-      href: social.twitter || "#",
-      icon: <Twitter size={18} />,
-      cta: "Follow Signal",
-    },
-    {
-      key: "kickstarter",
-      tag: "Funding",
-      title: "Back on Kickstarter",
-      copy: "When the campaign opens, this is where the door will be. Pledge tiers will be carved on bone.",
-      href: social.kickstarter || "#",
-      icon: <Heart size={18} />,
-      cta: "Become a Backer",
-    },
-    {
-      key: "patreon",
-      tag: "Sustain",
-      title: "Support on Patreon",
-      copy: "Monthly transmissions, full-resolution plates, and access to the development atelier.",
-      href: social.patreon || "#",
-      icon: <Heart size={18} />,
-      cta: "Support the Construct",
-    },
-  ];
+const ICONS = {
+  discord: <Send size={18} />,
+  twitter: <Twitter size={18} />,
+  kickstarter: <Heart size={18} />,
+  patreon: <Heart size={18} />,
+};
+
+const DEFAULT_CHANNEL_KEYS = ["discord", "twitter", "kickstarter", "patreon"];
+
+const DEFAULT_CHANNEL_CONTENT = {
+  discord: { tag: "Inner Circle", title: "Join the Discord", copy: "A small, slow-burning community.", cta: "Enter Discord" },
+  twitter: { tag: "Signals", title: "Follow on Twitter/X", copy: "Short transmissions.", cta: "Follow Signal" },
+  kickstarter: { tag: "Funding", title: "Back on Kickstarter", copy: "Pledge tiers will be carved on bone.", cta: "Become a Backer" },
+  patreon: { tag: "Sustain", title: "Support on Patreon", copy: "Monthly transmissions.", cta: "Support the Construct" },
+};
+
+export default function Community({ social = {}, settings = {} }) {
+  const {
+    channels_overline = "— Community + Support · §VI",
+    channels_heading = "Stand inside the\n*inner circle*.",
+    channels_intro = "We keep our channels few and slow on purpose. Pick a door. Each one opens onto a different angle of the same workshop.",
+    channels = {},
+  } = settings || {};
+
+  const cards = DEFAULT_CHANNEL_KEYS.map((key) => {
+    const c = { ...DEFAULT_CHANNEL_CONTENT[key], ...(channels?.[key] || {}) };
+    return {
+      key,
+      tag: c.tag,
+      title: c.title,
+      copy: c.copy,
+      cta: c.cta,
+      href: social?.[key] || "#",
+      icon: ICONS[key],
+    };
+  });
 
   return (
     <section
@@ -49,15 +47,13 @@ export default function Community({ social = {} }) {
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-14">
           <div className="lg:col-span-6">
-            <div className="overline mb-4">— Community + Support · §VI</div>
-            <h2 className="font-serif text-4xl sm:text-5xl leading-tight text-bone">
-              Stand inside the<br />
-              <span className="italic text-gold">inner circle</span>.
+            <div className="overline mb-4">{channels_overline}</div>
+            <h2 className="font-serif text-4xl sm:text-5xl leading-tight text-bone" data-testid="community-heading">
+              <RichText text={channels_heading} />
             </h2>
           </div>
           <p className="lg:col-span-6 font-mono text-sm text-bone-dim leading-loose self-end">
-            We keep our channels few and slow on purpose. Pick a door. Each one opens onto
-            a different angle of the same workshop.
+            {channels_intro}
           </p>
         </div>
 

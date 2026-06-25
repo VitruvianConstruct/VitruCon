@@ -34,7 +34,13 @@ export default function Hero({ tagline = "Enter the Construct.", settings = {} }
         <div className="lg:col-span-5 flex items-center justify-center lg:justify-start">
           <div className="relative">
             <div className="absolute -inset-10 rounded-full bg-gold/5 blur-3xl" />
-            <Glyph size={340} />
+            <Glyph
+              size={340}
+              image={settings?.glyph_image || null}
+              topLabel={settings?.glyph_top_label}
+              bottomLabel={settings?.glyph_bottom_label}
+              spin={settings?.glyph_spin !== false}
+            />
           </div>
         </div>
 

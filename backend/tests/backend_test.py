@@ -408,3 +408,205 @@ class TestAdminUpload:
         fr = requests.get(fetch_url, timeout=15)
         assert fr.status_code == 200, f"Could not fetch uploaded file at {fetch_url}"
         assert len(fr.content) == len(png_bytes)
+
+
+# ---------- Iteration 4: Fragments CRUD ----------
+
+class TestFragmentsCRUD:
+    def test_public_fragments_default_excludes_archived(self, s):
+        r = s.get(f"{API}/fragments", timeout=15)
+        assert r.status_code == 200
+        data = r.json()
+        # Seed has 5 fragments (I-V)
+        assert isinstance(data, list)
+        assert len(data) >= 5
+        for f in data:
+            assert f.get("archived") is not True
+            assert "_id" not in f
+        numerals = [f["numeral"] for f in data]
+        for n in ["I", "II", "III", "IV", "V"]:
+            assert n in numerals
+
+    def test_public_include_archived_returns_all(self):
+        # create an archived test fragment, ensure it appears with flag and not without
+        payload = {"numeral": "TEST_AR", "text": "TEST archived fragment", "source": "TEST", "archived": True}
+        cr = requests.post(f"{API}/admin/fragments", json=payload, headers=ADMIN_HEADERS, timeout=15)
+        assert cr.status_code == 200, cr.text
+        fid = cr.json()["id"]
+        try:
+            default_list = requests.get(f"{API}/fragments", timeout=15).json()
+            assert all(f["id"] != fid for f in default_list)
+            with_archived = requests.get(f"{API}/fragments", params={"include_archived": "true"}, timeout=15).json()
+            assert any(f["id"] == fid for f in with_archived)
+            # /api/site also excludes archived
+            site = requests.get(f"{API}/site", timeout=15).json()
+            assert "fragments" in site
+            assert all(f["id"] != fid for f in site["fragments"])
+        finally:
+            requests.delete(f"{API}/admin/fragments/{fid}", headers=ADMIN_HEADERS, timeout=15)
+
+    def test_admin_list_requires_auth(self):
+        assert requests.get(f"{API}/admin/fragments", timeout=15).status_code == 401
+        assert requests.get(f"{API}/admin/fragments", headers={"X-Admin-Password": "wrong"}, timeout=15).status_code == 401
+
+    def test_admin_list_returns_all_including_archived(self):
+        r = requests.get(f"{API}/admin/fragments", headers=ADMIN_HEADERS, timeout=15)
+        assert r.status_code == 200
+        data = r.json()
+        assert len(data) >= 5
+
+    def test_admin_create_requires_auth(self):
+        r = requests.post(f"{API}/admin/fragments", json={"text": "x"}, timeout=15)
+        assert r.status_code == 401
+
+    def test_admin_full_crud_flow(self):
+        # Create
+        payload = {"numeral": "TEST_X", "text": "TEST_fragment body", "source": "TEST_src"}
+        cr = requests.post(f"{API}/admin/fragments", json=payload, headers=ADMIN_HEADERS, timeout=15)
+        assert cr.status_code == 200, cr.text
+        body = cr.json()
+        fid = body["id"]
+        assert body["numeral"] == "TEST_X"
+        assert body["archived"] is False
+        try:
+            # appears in default list
+            lst = requests.get(f"{API}/fragments", timeout=15).json()
+            assert any(f["id"] == fid for f in lst)
+            # Update text
+            ur = requests.put(f"{API}/admin/fragments/{fid}",
+                              json={"text": "TEST_updated body"}, headers=ADMIN_HEADERS, timeout=15)
+            assert ur.status_code == 200
+            assert ur.json()["text"] == "TEST_updated body"
+            # Archive it -> disappears from /api/site and default /api/fragments
+            ar = requests.put(f"{API}/admin/fragments/{fid}",
+                              json={"archived": True}, headers=ADMIN_HEADERS, timeout=15)
+            assert ar.status_code == 200
+            assert ar.json()["archived"] is True
+            lst2 = requests.get(f"{API}/fragments", timeout=15).json()
+            assert all(f["id"] != fid for f in lst2)
+            site = requests.get(f"{API}/site", timeout=15).json()
+            assert all(f["id"] != fid for f in site["fragments"])
+            # include_archived=true shows it
+            lst3 = requests.get(f"{API}/fragments", params={"include_archived": "true"}, timeout=15).json()
+            assert any(f["id"] == fid for f in lst3)
+        finally:
+            dr = requests.delete(f"{API}/admin/fragments/{fid}", headers=ADMIN_HEADERS, timeout=15)
+            assert dr.status_code == 200
+            # 404 after delete
+            ur2 = requests.put(f"{API}/admin/fragments/{fid}",
+                               json={"text": "x"}, headers=ADMIN_HEADERS, timeout=15)
+            assert ur2.status_code == 404
+
+    def test_admin_update_404_for_missing(self):
+        r = requests.put(f"{API}/admin/fragments/does-not-exist",
+                         json={"text": "x"}, headers=ADMIN_HEADERS, timeout=15)
+        assert r.status_code == 404
+
+    def test_admin_delete_404_for_missing(self):
+        r = requests.delete(f"{API}/admin/fragments/does-not-exist",
+                            headers=ADMIN_HEADERS, timeout=15)
+        assert r.status_code == 404
+
+
+# ---------- Iteration 4: extended SiteSettings (glyph, fragments, channels, footer) ----------
+
+class TestIteration4Settings:
+    def test_site_includes_new_setting_defaults(self, s):
+        d = s.get(f"{API}/site", timeout=15).json()
+        st = d["settings"]
+        # glyph
+        assert "glyph_image" in st
+        assert st.get("glyph_top_label") == "VITRUVIAN · CONSTRUCT"
+        assert st.get("glyph_bottom_label") == "MMXXVI · OPVS · I"
+        assert st.get("glyph_spin") is True
+        # fragments
+        assert st.get("fragments_per_load") == 3
+        assert st.get("fragments_overline")
+        assert st.get("fragments_heading")
+        # channels (per-card content)
+        ch = st.get("channels")
+        assert isinstance(ch, dict)
+        for k in ["discord", "twitter", "kickstarter", "patreon"]:
+            assert k in ch
+            for f in ["tag", "title", "copy", "cta"]:
+                assert f in ch[k], f"channels.{k} missing {f}"
+        assert ch["discord"]["tag"] == "Inner Circle"
+        assert st.get("channels_overline")
+        assert st.get("channels_heading")
+        # footer
+        ft = st.get("footer")
+        assert isinstance(ft, dict)
+        for k in ["studio_subtitle", "studio_blurb", "watermark_text", "right_label", "copyright"]:
+            assert k in ft
+
+    def test_admin_settings_returns_defaults_for_legacy_doc(self):
+        # Even without our update, admin GET hydrates with defaults
+        r = requests.get(f"{API}/admin/settings", headers=ADMIN_HEADERS, timeout=15)
+        assert r.status_code == 200
+        d = r.json()
+        for key in ["glyph_top_label", "fragments_per_load", "channels", "footer"]:
+            assert key in d
+        assert "watermark_text" in d["footer"]
+
+    def test_put_persists_iteration4_fields_and_resets(self):
+        current = requests.get(f"{API}/admin/settings", headers=ADMIN_HEADERS, timeout=15).json()
+        # snapshots for restore
+        orig_channels = current.get("channels") or {}
+        orig_footer = current.get("footer") or {}
+        orig_glyph_top = current.get("glyph_top_label", "VITRUVIAN · CONSTRUCT")
+        orig_glyph_image = current.get("glyph_image")
+        orig_fpl = current.get("fragments_per_load", 3)
+
+        new_channels = {**orig_channels}
+        new_channels["discord"] = {**(orig_channels.get("discord") or {}), "tag": "INSIDER"}
+        new_footer = {**orig_footer, "watermark_text": "TEST_WM"}
+
+        try:
+            payload = {
+                **current,
+                "channels": new_channels,
+                "footer": new_footer,
+                "glyph_top_label": "TEST_TOP",
+                "fragments_per_load": 2,
+            }
+            r = requests.put(f"{API}/admin/settings", json=payload,
+                             headers=ADMIN_HEADERS, timeout=15)
+            assert r.status_code == 200, r.text
+            ret = r.json()
+            assert ret["channels"]["discord"]["tag"] == "INSIDER"
+            assert ret["footer"]["watermark_text"] == "TEST_WM"
+            assert ret["glyph_top_label"] == "TEST_TOP"
+            assert ret["fragments_per_load"] == 2
+
+            # reflects on /api/site
+            site = requests.get(f"{API}/site", timeout=15).json()
+            st = site["settings"]
+            assert st["channels"]["discord"]["tag"] == "INSIDER"
+            assert st["footer"]["watermark_text"] == "TEST_WM"
+            assert st["glyph_top_label"] == "TEST_TOP"
+            assert st["fragments_per_load"] == 2
+
+            # admin GET returns same persisted values
+            ag = requests.get(f"{API}/admin/settings", headers=ADMIN_HEADERS, timeout=15).json()
+            assert ag["channels"]["discord"]["tag"] == "INSIDER"
+            assert ag["footer"]["watermark_text"] == "TEST_WM"
+            assert ag["glyph_top_label"] == "TEST_TOP"
+            assert ag["fragments_per_load"] == 2
+
+            # glyph_image persistence (set + clear)
+            payload2 = {**ret, "glyph_image": "/api/uploads/test.png"}
+            r2 = requests.put(f"{API}/admin/settings", json=payload2,
+                              headers=ADMIN_HEADERS, timeout=15)
+            assert r2.status_code == 200
+            assert r2.json()["glyph_image"] == "/api/uploads/test.png"
+        finally:
+            reset = {
+                **current,
+                "channels": orig_channels,
+                "footer": orig_footer,
+                "glyph_top_label": orig_glyph_top,
+                "glyph_image": orig_glyph_image,
+                "fragments_per_load": orig_fpl,
+            }
+            requests.put(f"{API}/admin/settings", json=reset,
+                         headers=ADMIN_HEADERS, timeout=15)

@@ -106,6 +106,69 @@ class Subscriber(BaseModel):
     subscribed_at: str = Field(default_factory=now_iso)
 
 
+class FragmentBase(BaseModel):
+    numeral: str = ""              # e.g. "I", "II" — leave blank to auto-fill
+    text: str
+    source: Optional[str] = ""     # attribution line, e.g. "— recovered margin note"
+    archived: bool = False
+
+
+class Fragment(FragmentBase):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    created_at: str = Field(default_factory=now_iso)
+
+
+class FragmentUpdate(BaseModel):
+    numeral: Optional[str] = None
+    text: Optional[str] = None
+    source: Optional[str] = None
+    archived: Optional[bool] = None
+
+
+# ---- Channel / Footer content shapes ----
+
+def _default_channels() -> dict:
+    return {
+        "discord": {
+            "tag": "Inner Circle",
+            "title": "Join the Discord",
+            "copy": "A small, slow-burning community. Devlogs, sketches, and the occasional buried artefact.",
+            "cta": "Enter Discord",
+        },
+        "twitter": {
+            "tag": "Signals",
+            "title": "Follow on Twitter/X",
+            "copy": "Short transmissions, art drops, and field photographs from the studio floor.",
+            "cta": "Follow Signal",
+        },
+        "kickstarter": {
+            "tag": "Funding",
+            "title": "Back on Kickstarter",
+            "copy": "When the campaign opens, this is where the door will be. Pledge tiers will be carved on bone.",
+            "cta": "Become a Backer",
+        },
+        "patreon": {
+            "tag": "Sustain",
+            "title": "Support on Patreon",
+            "copy": "Monthly transmissions, full-resolution plates, and access to the development atelier.",
+            "cta": "Support the Construct",
+        },
+    }
+
+
+def _default_footer() -> dict:
+    return {
+        "studio_subtitle": "Studio · Atelier · Workshop",
+        "studio_blurb": (
+            "An independent studio assembling slow games like field notebooks. "
+            "Built in draughty rooms with very good light."
+        ),
+        "watermark_text": "Vitruvian Construct",
+        "right_label": "Opvs · I · MMXXVI",
+        "copyright": "© {year} Vitruvian Construct · All plates reserved",
+    }
+
+
 class SiteSettings(BaseModel):
     # Header / CTA
     tagline: str = "Enter the Construct."
@@ -120,6 +183,12 @@ class SiteSettings(BaseModel):
         "archive below is incomplete. That is intentional."
     )
     hero_secondary_cta_label: str = "Receive Transmissions →"
+
+    # Spinning glyph in the hero
+    glyph_image: Optional[str] = None          # if set, overrides the default SVG glyph
+    glyph_top_label: str = "VITRUVIAN · CONSTRUCT"
+    glyph_bottom_label: str = "MMXXVI · OPVS · I"
+    glyph_spin: bool = True
 
     # Manifesto content
     manifesto_overline: str = "— Manifesto · §I"
@@ -140,7 +209,12 @@ class SiteSettings(BaseModel):
     manifesto_image: str = "https://images.unsplash.com/photo-1625212895824-ff2232e9f304"
     manifesto_caption: str = "Plate I — study, reaching hands"
 
-    # Channels
+    # World Fragments section heading copy
+    fragments_overline: str = "— World Fragments · §V"
+    fragments_heading: str = "Fragments from the world,\nrecovered *out of order*."
+    fragments_per_load: int = 3
+
+    # Channels — URLs + card copy
     social: dict = Field(default_factory=lambda: {
         "discord": "https://discord.com/",
         "twitter": "https://twitter.com/",
@@ -148,6 +222,16 @@ class SiteSettings(BaseModel):
         "patreon": "https://www.patreon.com/",
         "email": "transmissions@vitruvianconstruct.studio",
     })
+    channels: dict = Field(default_factory=_default_channels)
+    channels_overline: str = "— Community + Support · §VI"
+    channels_heading: str = "Stand inside the\n*inner circle*."
+    channels_intro: str = (
+        "We keep our channels few and slow on purpose. Pick a door. "
+        "Each one opens onto a different angle of the same workshop."
+    )
+
+    # Footer content
+    footer: dict = Field(default_factory=_default_footer)
 
 
 # Partial update models — all fields optional
@@ -242,6 +326,25 @@ DEFAULT_UPDATES = [
 ]
 
 
+DEFAULT_FRAGMENTS = [
+    {"numeral": "I",
+     "text": "“The Construct does not remember being built. It remembers being found.”",
+     "source": "— recovered margin note, ledger 04"},
+    {"numeral": "II",
+     "text": "“We mistook the axolotl for an apology. It was a contract.”",
+     "source": "— field log, sublevel two"},
+    {"numeral": "III",
+     "text": "“Every mechanism here is a sentence. Most of them are unfinished.”",
+     "source": "— anonymous, atelier wall"},
+    {"numeral": "IV",
+     "text": "“Kiddo's parents never named the device. They simply set it down where it would be useful.”",
+     "source": "— household inventory, page torn"},
+    {"numeral": "V",
+     "text": "“Lottie understood the door before any of us did. She did not explain.”",
+     "source": "— observation log, week 7"},
+]
+
+
 async def seed_if_empty():
     meta = await db.meta.find_one({"_id": "seed"})
     current_version = (meta or {}).get("version", 0)
@@ -267,7 +370,6 @@ async def seed_if_empty():
         logger.info("Re-seeded irresponsible-axolotl project copy.")
 
     if await db.concept_art.count_documents({}) == 0 or needs_reseed:
-        # wipe and re-insert canonical art
         if needs_reseed:
             await db.concept_art.delete_many({})
         docs = [ConceptArt(**a).model_dump() for a in DEFAULT_ART]
@@ -278,6 +380,11 @@ async def seed_if_empty():
         docs = [Update(**u).model_dump() for u in DEFAULT_UPDATES]
         await db.updates.insert_many(docs)
         logger.info("Seeded %d transmission updates", len(docs))
+
+    if await db.fragments.count_documents({}) == 0:
+        docs = [Fragment(**f).model_dump() for f in DEFAULT_FRAGMENTS]
+        await db.fragments.insert_many(docs)
+        logger.info("Seeded %d fragments", len(docs))
 
     if await db.site_settings.count_documents({}) == 0:
         s = SiteSettings().model_dump()
@@ -309,15 +416,16 @@ async def site_payload():
     featured = next((p for p in projects if p.get("featured")), projects[0] if projects else None)
     art = [serialize(d) for d in await db.concept_art.find({}, {"_id": 0}).sort("created_at", -1).to_list(200)]
     updates = [serialize(d) for d in await db.updates.find({}, {"_id": 0}).sort("publish_date", -1).to_list(50)]
+    fragments = [serialize(d) for d in await db.fragments.find({"archived": {"$ne": True}}, {"_id": 0}).to_list(500)]
     raw = await db.site_settings.find_one({"_id": "singleton"}) or {}
     raw.pop("_id", None)
-    # hydrate through model so missing fields fall back to defaults
     settings = SiteSettings(**{k: v for k, v in raw.items() if k in SiteSettings.model_fields}).model_dump()
     return {
         "featured_project": featured,
         "projects": projects,
         "concept_art": art,
         "updates": updates,
+        "fragments": fragments,
         "social": settings["social"],
         "tagline": settings["tagline"],
         "hero_subtitle": settings.get("hero_subtitle"),
@@ -355,6 +463,13 @@ async def list_concept_art(category: Optional[str] = None):
 @api_router.get("/updates", response_model=List[Update])
 async def list_updates():
     docs = await db.updates.find({}, {"_id": 0}).sort("publish_date", -1).to_list(100)
+    return docs
+
+
+@api_router.get("/fragments", response_model=List[Fragment])
+async def list_fragments(include_archived: bool = False):
+    q = {} if include_archived else {"archived": {"$ne": True}}
+    docs = await db.fragments.find(q, {"_id": 0}).sort("created_at", -1).to_list(500)
     return docs
 
 
@@ -463,6 +578,40 @@ async def admin_delete_update(update_id: str, _: bool = Depends(require_admin)):
     if res.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Update not found")
     return {"deleted": update_id}
+
+
+# ---- Fragments ----
+@api_router.get("/admin/fragments", response_model=List[Fragment])
+async def admin_list_fragments(_: bool = Depends(require_admin)):
+    docs = await db.fragments.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return docs
+
+
+@api_router.post("/admin/fragments", response_model=Fragment)
+async def admin_create_fragment(payload: FragmentBase, _: bool = Depends(require_admin)):
+    frag = Fragment(**payload.model_dump())
+    await db.fragments.insert_one(frag.model_dump())
+    return frag
+
+
+@api_router.put("/admin/fragments/{fragment_id}", response_model=Fragment)
+async def admin_update_fragment(fragment_id: str, payload: FragmentUpdate, _: bool = Depends(require_admin)):
+    patch = {k: v for k, v in payload.model_dump(exclude_none=True).items()}
+    if not patch:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    res = await db.fragments.find_one_and_update({"id": fragment_id}, {"$set": patch})
+    if not res:
+        raise HTTPException(status_code=404, detail="Fragment not found")
+    doc = await db.fragments.find_one({"id": fragment_id}, {"_id": 0})
+    return doc
+
+
+@api_router.delete("/admin/fragments/{fragment_id}")
+async def admin_delete_fragment(fragment_id: str, _: bool = Depends(require_admin)):
+    res = await db.fragments.delete_one({"id": fragment_id})
+    if res.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Fragment not found")
+    return {"deleted": fragment_id}
 
 
 # ---- Settings ----

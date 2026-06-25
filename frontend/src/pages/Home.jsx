@@ -34,10 +34,10 @@ export default function Home() {
       <FeaturedProject project={data?.featured_project} social={data?.social} />
       <ConceptArtArchive art={data?.concept_art || []} />
       <TransmissionFeed updates={data?.updates || []} />
-      <WorldFragments />
-      <Community social={data?.social || {}} />
+      <WorldFragments fragments={data?.fragments || []} settings={data?.settings} />
+      <Community social={data?.social || {}} settings={data?.settings} />
       <Newsletter />
-      <Footer social={data?.social || {}} />
+      <Footer social={data?.social || {}} settings={data?.settings} />
       {error && (
         <div className="fixed bottom-4 left-4 z-50 font-mono text-xs bg-crimson/20 border border-crimson text-bone px-4 py-2">
           Backend signal lost. Displaying skeleton.

@@ -11,6 +11,10 @@ import {
   adminCreateUpdate,
   adminUpdateUpdate,
   adminDeleteUpdate,
+  adminListFragments,
+  adminCreateFragment,
+  adminUpdateFragment,
+  adminDeleteFragment,
   adminSubscribers,
   adminGetSettings,
   adminUpdateSettings,
@@ -19,7 +23,7 @@ import {
   resolveImage,
 } from "@/lib/api";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trash2, Pencil, X, Upload, Star, ExternalLink, LogOut, Save } from "lucide-react";
+import { Trash2, Pencil, X, Upload, Star, ExternalLink, LogOut, Save, Archive, RotateCcw, Shuffle } from "lucide-react";
 
 const CATS = ["environments", "characters", "creatures", "props", "mechanisms"];
 
@@ -708,6 +712,47 @@ function SplashTab({ pw }) {
 
       <div className="bracket-corners p-6 bg-ink-900/60 space-y-5">
         <div className="flex items-center justify-between">
+          <h3 className="font-serif text-xl text-bone">Spinning glyph</h3>
+          <span className="overline">§ Hero emblem</span>
+        </div>
+        <p className="font-mono text-[11px] tracking-[0.18em] uppercase text-bone-mute">
+          Upload your own emblem to replace the default Vitruvian SVG. Leave the image
+          empty to use the SVG and customise its inscriptions.
+        </p>
+        <ImageInput
+          pw={pw}
+          value={s.glyph_image || ""}
+          onChange={(v) => set("glyph_image", v)}
+          label="Custom glyph image (optional — replaces the SVG)"
+        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <Field
+            label="Inscription · top arc"
+            value={s.glyph_top_label || ""}
+            onChange={(e) => set("glyph_top_label", e.target.value)}
+            data-testid="splash-glyph-top"
+            hint="Visible only when the default SVG glyph is in use."
+          />
+          <Field
+            label="Inscription · bottom arc"
+            value={s.glyph_bottom_label || ""}
+            onChange={(e) => set("glyph_bottom_label", e.target.value)}
+            data-testid="splash-glyph-bottom"
+          />
+        </div>
+        <label className="flex items-center gap-2 font-mono text-xs text-bone-dim">
+          <input
+            type="checkbox"
+            checked={s.glyph_spin !== false}
+            onChange={(e) => set("glyph_spin", e.target.checked)}
+            data-testid="splash-glyph-spin"
+          />
+          <span className="overline mb-0">Spin slowly</span>
+        </label>
+      </div>
+
+      <div className="bracket-corners p-6 bg-ink-900/60 space-y-5">
+        <div className="flex items-center justify-between">
           <h3 className="font-serif text-xl text-bone">Studio Manifesto</h3>
           <span className="overline">§ I · Manifesto</span>
         </div>
@@ -763,7 +808,9 @@ function SplashTab({ pw }) {
   );
 }
 
-// ============================================================ CHANNELS (social URLs)
+// ============================================================ CHANNELS (community section)
+
+const CHANNEL_KEYS = ["discord", "twitter", "kickstarter", "patreon"];
 
 function ChannelsTab({ pw }) {
   const [settings, setSettings] = useState(null);
@@ -776,6 +823,15 @@ function ChannelsTab({ pw }) {
   if (!settings) return <p className="font-mono text-xs text-bone-mute">Loading channels…</p>;
 
   const setSocial = (k, v) => setSettings({ ...settings, social: { ...settings.social, [k]: v } });
+  const setChannel = (key, field, value) =>
+    setSettings({
+      ...settings,
+      channels: {
+        ...(settings.channels || {}),
+        [key]: { ...((settings.channels || {})[key] || {}), [field]: value },
+      },
+    });
+  const set = (k, v) => setSettings({ ...settings, [k]: v });
 
   const save = async () => {
     setSaving(true);
@@ -790,14 +846,41 @@ function ChannelsTab({ pw }) {
   };
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6 max-w-4xl">
       <div className="flex items-center justify-between">
-        <h2 className="font-serif text-2xl text-bone">Open channels</h2>
+        <h2 className="font-serif text-2xl text-bone">Community &amp; Channels</h2>
         <PrimaryButton onClick={save} disabled={saving} data-testid="channels-save">
           <Save size={14} /> {saving ? "Saving…" : "Save channels"}
         </PrimaryButton>
       </div>
+
       <div className="bracket-corners p-6 bg-ink-900/60 space-y-5">
+        <h3 className="font-serif text-xl text-bone">Section copy</h3>
+        <Field
+          label="Overline"
+          value={settings.channels_overline || ""}
+          onChange={(e) => set("channels_overline", e.target.value)}
+          data-testid="channels-overline"
+        />
+        <TextArea
+          label="Heading"
+          value={settings.channels_heading || ""}
+          onChange={(e) => set("channels_heading", e.target.value)}
+          rows={3}
+          data-testid="channels-heading"
+          hint="Use *word* for italic-gold emphasis. New lines become line breaks."
+        />
+        <TextArea
+          label="Intro paragraph"
+          value={settings.channels_intro || ""}
+          onChange={(e) => set("channels_intro", e.target.value)}
+          rows={3}
+          data-testid="channels-intro"
+        />
+      </div>
+
+      <div className="bracket-corners p-6 bg-ink-900/60 space-y-5">
+        <h3 className="font-serif text-xl text-bone">Channel URLs</h3>
         <p className="font-mono text-[11px] tracking-[0.18em] uppercase text-bone-mute">
           These URLs power the Community cards, the footer, and the featured project's support links.
         </p>
@@ -812,9 +895,365 @@ function ChannelsTab({ pw }) {
           />
         ))}
       </div>
+
+      <div className="space-y-6">
+        <h3 className="font-serif text-xl text-bone">Channel cards · copy</h3>
+        {CHANNEL_KEYS.map((key) => {
+          const c = (settings.channels || {})[key] || {};
+          return (
+            <div key={key} className="bracket-corners p-6 bg-ink-900/60 space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="font-serif text-lg text-bone capitalize">{key} card</h4>
+                <span className="overline">link · {settings.social?.[key] ? "set" : "missing"}</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field
+                  label="Tag (small overline)"
+                  value={c.tag || ""}
+                  onChange={(e) => setChannel(key, "tag", e.target.value)}
+                  data-testid={`channels-${key}-tag`}
+                />
+                <Field
+                  label="CTA button label"
+                  value={c.cta || ""}
+                  onChange={(e) => setChannel(key, "cta", e.target.value)}
+                  data-testid={`channels-${key}-cta`}
+                />
+              </div>
+              <Field
+                label="Title"
+                value={c.title || ""}
+                onChange={(e) => setChannel(key, "title", e.target.value)}
+                data-testid={`channels-${key}-title`}
+              />
+              <TextArea
+                label="Body copy"
+                value={c.copy || ""}
+                onChange={(e) => setChannel(key, "copy", e.target.value)}
+                rows={3}
+                data-testid={`channels-${key}-copy`}
+              />
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="flex justify-end">
+        <PrimaryButton onClick={save} disabled={saving} data-testid="channels-save-bottom">
+          <Save size={14} /> {saving ? "Saving…" : "Save channels"}
+        </PrimaryButton>
+      </div>
     </div>
   );
 }
+
+// ============================================================ FRAGMENTS
+
+function FragmentsTab({ pw }) {
+  const [items, setItems] = useState([]);
+  const [editing, setEditing] = useState(null);
+  const [creating, setCreating] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
+  const [n, setN] = useState({ numeral: "", text: "", source: "", archived: false });
+  const [loading, setLoading] = useState(true);
+
+  const refresh = async () => {
+    setLoading(true);
+    try {
+      const data = await adminListFragments(pw);
+      setItems(data);
+    } catch {
+      toast.error("Could not load fragments.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    refresh();
+  }, []); // eslint-disable-line
+
+  const createIt = async () => {
+    if (!n.text) {
+      toast.error("Fragment text is required.");
+      return;
+    }
+    try {
+      await adminCreateFragment(pw, n);
+      toast.success("Fragment added.");
+      setN({ numeral: "", text: "", source: "", archived: false });
+      setCreating(false);
+      refresh();
+    } catch {
+      toast.error("Failed.");
+    }
+  };
+
+  const toggleArchive = async (f) => {
+    try {
+      await adminUpdateFragment(pw, f.id, { archived: !f.archived });
+      toast.success(f.archived ? "Restored." : "Archived.");
+      refresh();
+    } catch {
+      toast.error("Could not update.");
+    }
+  };
+
+  const visible = items.filter((f) => (showArchived ? true : !f.archived));
+  const activeCount = items.filter((f) => !f.archived).length;
+  const archivedCount = items.length - activeCount;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h2 className="font-serif text-2xl text-bone">World Fragments</h2>
+          <p className="mt-1 font-mono text-[11px] tracking-[0.18em] uppercase text-bone-mute">
+            <Shuffle className="inline" size={11} /> {activeCount} active · {archivedCount} archived · home picks 3 random on every load
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <label className="flex items-center gap-2 font-mono text-[11px] tracking-[0.2em] uppercase text-bone-dim cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showArchived}
+              onChange={(e) => setShowArchived(e.target.checked)}
+              data-testid="fragments-show-archived"
+            />
+            Show archived
+          </label>
+          <PrimaryButton onClick={() => setCreating((c) => !c)} data-testid="admin-new-fragment-toggle">
+            {creating ? "Close form" : "+ New fragment"}
+          </PrimaryButton>
+        </div>
+      </div>
+
+      {creating && (
+        <div className="bracket-corners p-6 bg-ink-900/60 space-y-5">
+          <h3 className="font-serif text-xl text-bone">New fragment</h3>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Field
+              label="Numeral (optional)"
+              value={n.numeral}
+              onChange={(e) => setN({ ...n, numeral: e.target.value })}
+              data-testid="admin-fragment-numeral"
+              placeholder="VI"
+              hint="Roman numeral shown above the quote."
+            />
+            <div className="md:col-span-3">
+              <Field
+                label="Source line (attribution)"
+                value={n.source}
+                onChange={(e) => setN({ ...n, source: e.target.value })}
+                data-testid="admin-fragment-source"
+                placeholder="— recovered margin note, ledger 04"
+              />
+            </div>
+          </div>
+          <TextArea
+            label="Fragment text"
+            value={n.text}
+            onChange={(e) => setN({ ...n, text: e.target.value })}
+            rows={4}
+            data-testid="admin-fragment-text"
+            hint="Curly quotes are fine. Keep it short and cryptic."
+          />
+          <div className="flex justify-end">
+            <PrimaryButton onClick={createIt} data-testid="admin-fragment-create">
+              <Save size={14} /> File fragment
+            </PrimaryButton>
+          </div>
+        </div>
+      )}
+
+      {loading && <p className="font-mono text-xs text-bone-mute">Loading…</p>}
+
+      <div className="space-y-3">
+        {visible.map((f) => (
+          <div key={f.id}>
+            {editing === f.id ? (
+              <FragmentEditor
+                pw={pw}
+                item={f}
+                onSaved={() => { setEditing(null); refresh(); }}
+                onCancel={() => setEditing(null)}
+                onDelete={async () => {
+                  if (!window.confirm("Permanently delete this fragment?")) return;
+                  await adminDeleteFragment(pw, f.id);
+                  toast.success("Deleted.");
+                  setEditing(null);
+                  refresh();
+                }}
+              />
+            ) : (
+              <div
+                className={`bracket-corners p-5 bg-ink-900/40 flex items-start gap-4 ${f.archived ? "opacity-50" : ""}`}
+                data-testid={`fragment-row-${f.id}`}
+              >
+                <div className="font-accent text-gold text-[11px] tracking-[0.4em] w-16 shrink-0 pt-1">
+                  {f.numeral || "—"}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <blockquote className="font-serif text-base text-bone italic leading-snug">
+                    {f.text}
+                  </blockquote>
+                  {f.source && (
+                    <p className="mt-2 font-mono text-[11px] tracking-[0.2em] uppercase text-bone-mute">
+                      {f.source}
+                    </p>
+                  )}
+                  {f.archived && (
+                    <p className="mt-2 overline text-crimson/80">Archived</p>
+                  )}
+                </div>
+                <div className="shrink-0 flex flex-col items-end gap-2">
+                  <GhostButton onClick={() => setEditing(f.id)} data-testid={`fragment-edit-${f.id}`}>
+                    <Pencil size={12} /> Edit
+                  </GhostButton>
+                  <GhostButton
+                    onClick={() => toggleArchive(f)}
+                    data-testid={`fragment-archive-${f.id}`}
+                  >
+                    {f.archived ? <><RotateCcw size={12} /> Restore</> : <><Archive size={12} /> Archive</>}
+                  </GhostButton>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+        {!loading && visible.length === 0 && (
+          <p className="font-mono text-xs text-bone-mute">No fragments {showArchived ? "" : "active"}.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function FragmentEditor({ pw, item, onSaved, onCancel, onDelete }) {
+  const [form, setForm] = useState({
+    numeral: item.numeral || "",
+    text: item.text || "",
+    source: item.source || "",
+  });
+  const save = async () => {
+    try {
+      await adminUpdateFragment(pw, item.id, form);
+      toast.success("Fragment saved.");
+      onSaved?.();
+    } catch {
+      toast.error("Save failed.");
+    }
+  };
+  return (
+    <div className="bracket-corners p-6 bg-ink-900/60 space-y-5">
+      <div className="flex items-center justify-between">
+        <h3 className="font-serif text-xl text-bone">Edit fragment</h3>
+        <GhostButton onClick={onCancel}><X size={12} /> Cancel</GhostButton>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Field label="Numeral" value={form.numeral} onChange={(e) => setForm({ ...form, numeral: e.target.value })} data-testid="edit-fragment-numeral" />
+        <div className="md:col-span-3">
+          <Field label="Source / attribution" value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} data-testid="edit-fragment-source" />
+        </div>
+      </div>
+      <TextArea label="Text" value={form.text} onChange={(e) => setForm({ ...form, text: e.target.value })} rows={4} data-testid="edit-fragment-text" />
+      <div className="flex items-center justify-between pt-4 border-t border-gold/10">
+        <DangerButton onClick={onDelete} data-testid="edit-fragment-delete"><Trash2 size={12} /> Delete</DangerButton>
+        <PrimaryButton onClick={save} data-testid="edit-fragment-save"><Save size={14} /> Save</PrimaryButton>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================ FOOTER
+
+function FooterTab({ pw }) {
+  const [settings, setSettings] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    adminGetSettings(pw).then(setSettings).catch(() => toast.error("Could not load footer."));
+  }, [pw]);
+
+  if (!settings) return <p className="font-mono text-xs text-bone-mute">Loading footer…</p>;
+
+  const f = settings.footer || {};
+  const setF = (k, v) => setSettings({ ...settings, footer: { ...(settings.footer || {}), [k]: v } });
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await adminUpdateSettings(pw, settings);
+      toast.success("Footer saved.");
+    } catch {
+      toast.error("Save failed.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6 max-w-3xl">
+      <div className="flex items-center justify-between">
+        <h2 className="font-serif text-2xl text-bone">Footer</h2>
+        <PrimaryButton onClick={save} disabled={saving} data-testid="footer-save">
+          <Save size={14} /> {saving ? "Saving…" : "Save footer"}
+        </PrimaryButton>
+      </div>
+
+      <div className="bracket-corners p-6 bg-ink-900/60 space-y-5">
+        <h3 className="font-serif text-xl text-bone">Studio block (left column)</h3>
+        <Field
+          label="Subtitle under studio name"
+          value={f.studio_subtitle || ""}
+          onChange={(e) => setF("studio_subtitle", e.target.value)}
+          data-testid="footer-studio-subtitle-input"
+          placeholder="Studio · Atelier · Workshop"
+        />
+        <TextArea
+          label="Studio blurb"
+          value={f.studio_blurb || ""}
+          onChange={(e) => setF("studio_blurb", e.target.value)}
+          rows={3}
+          data-testid="footer-studio-blurb-input"
+        />
+      </div>
+
+      <div className="bracket-corners p-6 bg-ink-900/60 space-y-5">
+        <h3 className="font-serif text-xl text-bone">Bottom row + watermark</h3>
+        <Field
+          label="Copyright line"
+          value={f.copyright || ""}
+          onChange={(e) => setF("copyright", e.target.value)}
+          data-testid="footer-copyright-input"
+          hint="Use {year} as a placeholder for the current year."
+        />
+        <Field
+          label="Right-side label"
+          value={f.right_label || ""}
+          onChange={(e) => setF("right_label", e.target.value)}
+          data-testid="footer-right-label-input"
+          placeholder="Opvs · I · MMXXVI"
+        />
+        <Field
+          label="Giant watermark text"
+          value={f.watermark_text || ""}
+          onChange={(e) => setF("watermark_text", e.target.value)}
+          data-testid="footer-watermark-input"
+          hint="The huge italic text at the very bottom of the page. Leave empty to hide it."
+        />
+      </div>
+
+      <div className="flex justify-end">
+        <PrimaryButton onClick={save} disabled={saving} data-testid="footer-save-bottom">
+          <Save size={14} /> {saving ? "Saving…" : "Save footer"}
+        </PrimaryButton>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================ CHANNELS — end
 
 // ============================================================ SUBSCRIBERS
 
@@ -954,7 +1393,9 @@ export default function Admin() {
               ["projects", "Projects"],
               ["art", "Archive"],
               ["transmissions", "Signals"],
+              ["fragments", "Fragments"],
               ["settings", "Channels"],
+              ["footer", "Footer"],
               ["subscribers", "Subscribers"],
             ].map(([v, l]) => (
               <TabsTrigger
@@ -981,8 +1422,14 @@ export default function Admin() {
             <TabsContent value="transmissions">
               <UpdatesTab pw={pw} updates={data?.updates || []} refresh={refresh} />
             </TabsContent>
+            <TabsContent value="fragments">
+              <FragmentsTab pw={pw} />
+            </TabsContent>
             <TabsContent value="settings">
               <ChannelsTab pw={pw} />
+            </TabsContent>
+            <TabsContent value="footer">
+              <FooterTab pw={pw} />
             </TabsContent>
             <TabsContent value="subscribers">
               <SubscribersTab pw={pw} />

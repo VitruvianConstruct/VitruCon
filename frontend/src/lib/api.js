@@ -42,6 +42,16 @@ export const adminUpdateUpdate = (pw, id, data) =>
 export const adminDeleteUpdate = (pw, id) =>
   api.delete(`/admin/updates/${id}`, { headers: adminHeaders(pw) }).then((r) => r.data);
 
+// Fragments
+export const adminListFragments = (pw) =>
+  api.get("/admin/fragments", { headers: adminHeaders(pw) }).then((r) => r.data);
+export const adminCreateFragment = (pw, data) =>
+  api.post("/admin/fragments", data, { headers: adminHeaders(pw) }).then((r) => r.data);
+export const adminUpdateFragment = (pw, id, data) =>
+  api.put(`/admin/fragments/${id}`, data, { headers: adminHeaders(pw) }).then((r) => r.data);
+export const adminDeleteFragment = (pw, id) =>
+  api.delete(`/admin/fragments/${id}`, { headers: adminHeaders(pw) }).then((r) => r.data);
+
 export const adminSubscribers = (pw) =>
   api.get("/admin/subscribers", { headers: adminHeaders(pw) }).then((r) => r.data);
 
