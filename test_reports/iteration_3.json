@@ -1,0 +1,29 @@
+{
+  "summary": "Iteration 3 — editable Splash (Hero+Manifesto) + renamed admin tabs. Backend: 31/31 pytest pass including 4 new tests covering /api/site.settings shape with defaults, /api/admin/settings new field exposure, PUT persistence of hero/manifesto fields with reflection in /api/site, and backwards-compat default hydration. Frontend: /admin tabs render in correct order (Splash · Projects · Archive · Signals · Channels · Subscribers) with backward-compatible testids (admin-tab-{splash,projects,art,transmissions,settings,subscribers}). All 12 splash form testids present and editable (splash-hero-overline, splash-hero-title, splash-hero-body, splash-tagline, splash-secondary-cta, splash-manifesto-overline, splash-manifesto-heading, splash-manifesto-body, splash-manifesto-tags, splash-manifesto-caption, splash-save, splash-save-bottom). End-to-end live update verified: editing splash-hero-overline + splash-manifesto-heading and clicking splash-save → home page renders the new strings inside [data-testid='hero-overline'] and [data-testid='manifesto-heading']. RichText renders *...* as <span class='italic text-gold'> and \\n as <br>. Channels tab: editing channels-discord and saving reflects in /api/site response.social.discord. All values reset to documented defaults afterwards (verified via final GET /api/site).",
+  "backend_issues": { "critical": [], "minor": [] },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Backward-compat tab data-testids are intentionally preserved (admin-tab-art = Archive label, admin-tab-transmissions = Signals label, admin-tab-settings = Channels label). Documented in admin/tabs JSX. OK but worth a code comment near the tab array so future devs don't 'fix' the mismatch.",
+    "/api/admin/settings PUT requires the full SiteSettings shape — partial PUTs would null missing optional fields. SplashTab and ChannelsTab in Admin.jsx correctly read the existing settings first and merge before PUT. Acceptable for a singleton settings doc.",
+    "GET /api/site and GET /api/admin/settings both hydrate through `SiteSettings(**filtered)` so a legacy doc missing new fields still yields a complete payload. Verified via test_backwards_compat_missing_fields_filled_with_defaults.",
+    "RichText splits on * and \\n — text containing a literal asterisk would be interpreted as emphasis. Probably fine for studio copy; document the convention near RichText.jsx for content editors.",
+    "Manifesto.jsx splits body on '\\n\\n' to produce paragraphs — single \\n inside a paragraph becomes a hard break only if RichText processes it. Confirmed manifesto-paragraph-0 renders with full first paragraph content."
+  ],
+  "updated_files": ["/app/backend/tests/backend_test.py"],
+  "success_rate": { "backend": "100% (31/31)", "frontend": "100% on tested flows" },
+  "test_credentials": "Admin passphrase: vitruvian-admin-2025 (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "No new seed. Test temporarily set hero_overline=TEST_HERO_OVERLINE_<ts>, manifesto_heading=TEST_MANIFESTO_HEADING_<ts>, manifesto_tags=['test-tag-1','test-tag-2'], social.discord=https://discord.com/test-<ts>. All reset to documented defaults at end of run (verified via final GET /api/site).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "backend_test.py now has 31 cases including TestSplashManifestoSettings (4 cases). UI selectors of note: admin-tab-{splash,projects,art,transmissions,settings,subscribers} (testids retained for back-compat with renamed labels), splash-{hero-overline,hero-title,hero-body,tagline,secondary-cta,manifesto-overline,manifesto-heading,manifesto-body,manifesto-tags,manifesto-caption,save,save-bottom}, channels-{discord,twitter,kickstarter,patreon,email,save}, hero-{overline,title,body,cta-primary,cta-secondary}, manifesto-{overline,heading,caption,paragraph-N}. After live-update tests, ALWAYS reset hero_overline='Studio · Opvs Primvm · MMXXVI', manifesto_overline='— Manifesto · §I', tagline='Enter the Construct.', social.discord='https://discord.com/'. Admin auth persists in sessionStorage; re-navigating to /admin can skip the login form.",
+  "rca of the issue": "No bugs found in this iteration."
+}

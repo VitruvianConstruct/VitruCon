@@ -28,9 +28,9 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-ink-900 text-bone">
       <Navbar />
-      <Hero tagline={data?.tagline || "Enter the Construct."} />
+      <Hero tagline={data?.tagline || "Enter the Construct."} settings={data?.settings} />
       <Marquee />
-      <Manifesto />
+      <Manifesto settings={data?.settings} />
       <FeaturedProject project={data?.featured_project} social={data?.social} />
       <ConceptArtArchive art={data?.concept_art || []} />
       <TransmissionFeed updates={data?.updates || []} />

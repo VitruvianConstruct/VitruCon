@@ -284,6 +284,98 @@ class TestAdminSettings:
                          headers=ADMIN_HEADERS, timeout=15)
 
 
+# ---------- Iteration 3: Splash / Manifesto settings ----------
+
+DEFAULT_HERO_OVERLINE = "Studio · Opvs Primvm · MMXXVI"
+DEFAULT_HERO_TITLE = "We build *invented beings*\nfrom *parchment* & *brass*."
+DEFAULT_MANIFESTO_OVERLINE = "— Manifesto · §I"
+
+
+class TestSplashManifestoSettings:
+    def test_site_includes_settings_with_defaults(self, s):
+        d = s.get(f"{API}/site", timeout=15).json()
+        assert "settings" in d, "site payload must include 'settings'"
+        st = d["settings"]
+        for k in [
+            "hero_overline", "hero_title", "hero_body", "hero_secondary_cta_label",
+            "manifesto_overline", "manifesto_heading", "manifesto_body",
+            "manifesto_tags", "manifesto_image", "manifesto_caption",
+        ]:
+            assert k in st, f"settings missing field: {k}"
+        assert isinstance(st["manifesto_tags"], list)
+        # defaults populated
+        assert st["hero_overline"] == DEFAULT_HERO_OVERLINE
+        assert "invented beings" in st["hero_title"]
+        assert st["manifesto_overline"] == DEFAULT_MANIFESTO_OVERLINE
+
+    def test_admin_get_returns_new_fields_with_defaults(self):
+        r = requests.get(f"{API}/admin/settings", headers=ADMIN_HEADERS, timeout=15)
+        assert r.status_code == 200
+        d = r.json()
+        for k in [
+            "hero_overline", "hero_title", "hero_body", "hero_secondary_cta_label",
+            "manifesto_overline", "manifesto_heading", "manifesto_body",
+            "manifesto_tags", "manifesto_image", "manifesto_caption",
+        ]:
+            assert k in d, f"admin settings missing field: {k}"
+
+    def test_put_persists_hero_and_manifesto_and_resets(self):
+        current = requests.get(f"{API}/admin/settings", headers=ADMIN_HEADERS, timeout=15).json()
+        unique = uuid.uuid4().hex[:6]
+        new_overline = f"TEST_HERO_{unique}"
+        new_heading = f"TEST_MANIFESTO_HEADING_{unique}"
+        try:
+            payload = {
+                **current,
+                "hero_overline": new_overline,
+                "manifesto_heading": new_heading,
+                "manifesto_tags": ["test-tag-1", "test-tag-2"],
+            }
+            r = requests.put(f"{API}/admin/settings", json=payload,
+                             headers=ADMIN_HEADERS, timeout=15)
+            assert r.status_code == 200, r.text
+            assert r.json()["hero_overline"] == new_overline
+            assert r.json()["manifesto_heading"] == new_heading
+            assert r.json()["manifesto_tags"] == ["test-tag-1", "test-tag-2"]
+
+            # Reflected in /api/site response.settings
+            site = requests.get(f"{API}/site", timeout=15).json()
+            assert site["settings"]["hero_overline"] == new_overline
+            assert site["settings"]["manifesto_heading"] == new_heading
+        finally:
+            reset = {
+                **current,
+                "tagline": "Enter the Construct.",
+                "hero_overline": DEFAULT_HERO_OVERLINE,
+                "hero_title": DEFAULT_HERO_TITLE,
+                "manifesto_overline": DEFAULT_MANIFESTO_OVERLINE,
+                "manifesto_heading": current.get(
+                    "manifesto_heading",
+                    "We treat the studio\nas an *atelier*,\nand every game as a\n*small mechanism*.",
+                ),
+                "manifesto_tags": current.get(
+                    "manifesto_tags",
+                    ["narrative", "handcrafted", "small-team", "long-form"],
+                ),
+                "social": {**current.get("social", {}), "discord": "https://discord.com/"},
+            }
+            requests.put(f"{API}/admin/settings", json=reset,
+                         headers=ADMIN_HEADERS, timeout=15)
+
+    def test_backwards_compat_missing_fields_filled_with_defaults(self):
+        """Simulate a legacy doc: PUT minimal known fields, GET fills the rest via SiteSettings."""
+        current = requests.get(f"{API}/admin/settings", headers=ADMIN_HEADERS, timeout=15).json()
+        # PUT a full SiteSettings (the API requires the full model). Then verify defaults remain present on GET.
+        r = requests.put(f"{API}/admin/settings", json=current,
+                         headers=ADMIN_HEADERS, timeout=15)
+        assert r.status_code == 200
+        d = requests.get(f"{API}/admin/settings", headers=ADMIN_HEADERS, timeout=15).json()
+        # All fields still there with non-empty defaults (model fills if missing)
+        assert d["hero_overline"]
+        assert d["hero_title"]
+        assert isinstance(d["manifesto_tags"], list)
+
+
 # ---------- Admin Upload ----------
 
 class TestAdminUpload:

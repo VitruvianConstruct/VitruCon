@@ -107,8 +107,40 @@ class Subscriber(BaseModel):
 
 
 class SiteSettings(BaseModel):
+    # Header / CTA
     tagline: str = "Enter the Construct."
-    hero_subtitle: Optional[str] = None
+    hero_subtitle: Optional[str] = None  # legacy, no longer rendered (kept for back-compat)
+
+    # Hero / splash content (use *word* for italic-gold emphasis, \n for line breaks)
+    hero_overline: str = "Studio · Opvs Primvm · MMXXVI"
+    hero_title: str = "We build *invented beings*\nfrom *parchment* & *brass*."
+    hero_body: str = (
+        "Vitruvian Construct is a small studio assembling games like field notebooks — "
+        "equal parts renaissance sketch, occult diagram, and animate mechanism. The "
+        "archive below is incomplete. That is intentional."
+    )
+    hero_secondary_cta_label: str = "Receive Transmissions →"
+
+    # Manifesto content
+    manifesto_overline: str = "— Manifesto · §I"
+    manifesto_heading: str = (
+        "We treat the studio\nas an *atelier*,\nand every game as a\n*small mechanism*."
+    )
+    manifesto_body: str = (
+        "Vitruvian Construct is an independent studio assembling slow, narrative games "
+        "that feel less like products and more like artefacts — pulled from a workshop "
+        "somewhere between a renaissance bottega and a cabinet of curiosities.\n\n"
+        "We are interested in invented beings: creatures and characters that should not "
+        "exist but insist on it anyway. We design our mechanics like clockwork: visible, "
+        "slightly imperfect, occasionally cruel.\n\n"
+        "Each project ships with its own diagrams, marginalia, and field notes. "
+        "The game is the centre; the archive around it is the world."
+    )
+    manifesto_tags: List[str] = Field(default_factory=lambda: ["narrative", "handcrafted", "small-team", "long-form"])
+    manifesto_image: str = "https://images.unsplash.com/photo-1625212895824-ff2232e9f304"
+    manifesto_caption: str = "Plate I — study, reaching hands"
+
+    # Channels
     social: dict = Field(default_factory=lambda: {
         "discord": "https://discord.com/",
         "twitter": "https://twitter.com/",
@@ -277,35 +309,32 @@ async def site_payload():
     featured = next((p for p in projects if p.get("featured")), projects[0] if projects else None)
     art = [serialize(d) for d in await db.concept_art.find({}, {"_id": 0}).sort("created_at", -1).to_list(200)]
     updates = [serialize(d) for d in await db.updates.find({}, {"_id": 0}).sort("publish_date", -1).to_list(50)]
-    settings_doc = await db.site_settings.find_one({"_id": "singleton"}) or {}
-    settings_doc.pop("_id", None)
-    social = settings_doc.get("social") or {
-        "discord": "https://discord.com/",
-        "twitter": "https://twitter.com/",
-        "kickstarter": "https://www.kickstarter.com/",
-        "patreon": "https://www.patreon.com/",
-        "email": "transmissions@vitruvianconstruct.studio",
-    }
+    raw = await db.site_settings.find_one({"_id": "singleton"}) or {}
+    raw.pop("_id", None)
+    # hydrate through model so missing fields fall back to defaults
+    settings = SiteSettings(**{k: v for k, v in raw.items() if k in SiteSettings.model_fields}).model_dump()
     return {
         "featured_project": featured,
         "projects": projects,
         "concept_art": art,
         "updates": updates,
-        "social": social,
-        "tagline": settings_doc.get("tagline", "Enter the Construct."),
-        "hero_subtitle": settings_doc.get("hero_subtitle"),
+        "social": settings["social"],
+        "tagline": settings["tagline"],
+        "hero_subtitle": settings.get("hero_subtitle"),
+        "settings": settings,
     }
 
 
 @api_router.get("/settings")
 async def get_settings():
-    s = await db.site_settings.find_one({"_id": "singleton"})
-    if not s:
+    raw = await db.site_settings.find_one({"_id": "singleton"})
+    if not raw:
         s = SiteSettings().model_dump()
-        s["_id"] = "singleton"
-        await db.site_settings.insert_one(s)
-    s.pop("_id", None)
-    return s
+        s_with_id = {"_id": "singleton", **s}
+        await db.site_settings.insert_one(s_with_id)
+        return s
+    raw.pop("_id", None)
+    return SiteSettings(**{k: v for k, v in raw.items() if k in SiteSettings.model_fields}).model_dump()
 
 
 @api_router.get("/projects", response_model=List[Project])
@@ -439,13 +468,14 @@ async def admin_delete_update(update_id: str, _: bool = Depends(require_admin)):
 # ---- Settings ----
 @api_router.get("/admin/settings")
 async def admin_get_settings(_: bool = Depends(require_admin)):
-    s = await db.site_settings.find_one({"_id": "singleton"})
-    if not s:
+    raw = await db.site_settings.find_one({"_id": "singleton"})
+    if not raw:
         s = SiteSettings().model_dump()
-        s["_id"] = "singleton"
-        await db.site_settings.insert_one(s)
-    s.pop("_id", None)
-    return s
+        await db.site_settings.insert_one({"_id": "singleton", **s})
+        return s
+    raw.pop("_id", None)
+    # hydrate through model so any new fields fall back to defaults instead of being missing
+    return SiteSettings(**{k: v for k, v in raw.items() if k in SiteSettings.model_fields}).model_dump()
 
 
 @api_router.put("/admin/settings")

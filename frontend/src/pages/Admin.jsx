@@ -610,17 +610,170 @@ function UpdatesTab({ pw, updates, refresh }) {
   );
 }
 
-// ============================================================ SETTINGS
+// ============================================================ SPLASH (Hero + Manifesto)
 
-function SettingsTab({ pw }) {
+function SplashTab({ pw }) {
+  const [s, setS] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    adminGetSettings(pw).then(setS).catch(() => toast.error("Could not load splash content."));
+  }, [pw]);
+
+  if (!s) return <p className="font-mono text-xs text-bone-mute">Loading splash content…</p>;
+
+  const set = (k, v) => setS({ ...s, [k]: v });
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      // ensure tags is an array
+      const payload = {
+        ...s,
+        manifesto_tags: Array.isArray(s.manifesto_tags)
+          ? s.manifesto_tags
+          : String(s.manifesto_tags || "")
+              .split(",")
+              .map((t) => t.trim())
+              .filter(Boolean),
+      };
+      await adminUpdateSettings(pw, payload);
+      toast.success("Splash & manifesto saved. Home updates live.");
+    } catch {
+      toast.error("Save failed.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const tagsValue = Array.isArray(s.manifesto_tags) ? s.manifesto_tags.join(", ") : s.manifesto_tags || "";
+
+  return (
+    <div className="space-y-8 max-w-4xl">
+      <div className="flex items-start justify-between gap-6">
+        <div>
+          <h2 className="font-serif text-2xl text-bone">Splash &amp; Manifesto</h2>
+          <p className="mt-2 font-mono text-[11px] tracking-[0.18em] uppercase text-bone-mute max-w-2xl">
+            Wrap any phrase in <span className="text-gold">*asterisks*</span> to render it in italic gold accent. Use line breaks to split a heading across lines.
+          </p>
+        </div>
+        <PrimaryButton onClick={save} disabled={saving} data-testid="splash-save">
+          <Save size={14} /> {saving ? "Saving…" : "Save splash"}
+        </PrimaryButton>
+      </div>
+
+      <div className="bracket-corners p-6 bg-ink-900/60 space-y-5">
+        <div className="flex items-center justify-between">
+          <h3 className="font-serif text-xl text-bone">Hero / Landing splash</h3>
+          <span className="overline">§ Top of page</span>
+        </div>
+        <Field
+          label="Overline (small text above the title)"
+          value={s.hero_overline || ""}
+          onChange={(e) => set("hero_overline", e.target.value)}
+          data-testid="splash-hero-overline"
+        />
+        <TextArea
+          label="Hero title"
+          value={s.hero_title || ""}
+          onChange={(e) => set("hero_title", e.target.value)}
+          rows={3}
+          data-testid="splash-hero-title"
+          hint="Use *word* for italic-gold emphasis. New lines become line breaks."
+        />
+        <TextArea
+          label="Hero body paragraph"
+          value={s.hero_body || ""}
+          onChange={(e) => set("hero_body", e.target.value)}
+          rows={4}
+          data-testid="splash-hero-body"
+        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <Field
+            label="Primary CTA button (tagline)"
+            value={s.tagline || ""}
+            onChange={(e) => set("tagline", e.target.value)}
+            data-testid="splash-tagline"
+            hint="The gold button on the hero."
+          />
+          <Field
+            label="Secondary CTA label"
+            value={s.hero_secondary_cta_label || ""}
+            onChange={(e) => set("hero_secondary_cta_label", e.target.value)}
+            data-testid="splash-secondary-cta"
+            hint="Anchors to the newsletter section."
+          />
+        </div>
+      </div>
+
+      <div className="bracket-corners p-6 bg-ink-900/60 space-y-5">
+        <div className="flex items-center justify-between">
+          <h3 className="font-serif text-xl text-bone">Studio Manifesto</h3>
+          <span className="overline">§ I · Manifesto</span>
+        </div>
+        <Field
+          label="Overline"
+          value={s.manifesto_overline || ""}
+          onChange={(e) => set("manifesto_overline", e.target.value)}
+          data-testid="splash-manifesto-overline"
+        />
+        <TextArea
+          label="Manifesto heading"
+          value={s.manifesto_heading || ""}
+          onChange={(e) => set("manifesto_heading", e.target.value)}
+          rows={4}
+          data-testid="splash-manifesto-heading"
+          hint="Use *word* for italic-gold emphasis. New lines become line breaks."
+        />
+        <TextArea
+          label="Manifesto body"
+          value={s.manifesto_body || ""}
+          onChange={(e) => set("manifesto_body", e.target.value)}
+          rows={10}
+          data-testid="splash-manifesto-body"
+          hint="Separate paragraphs with a blank line."
+        />
+        <Field
+          label="Tags (comma-separated)"
+          value={tagsValue}
+          onChange={(e) => set("manifesto_tags", e.target.value.split(",").map((t) => t.trim()))}
+          data-testid="splash-manifesto-tags"
+          placeholder="narrative, handcrafted, small-team"
+        />
+        <ImageInput
+          pw={pw}
+          value={s.manifesto_image || ""}
+          onChange={(v) => set("manifesto_image", v)}
+          label="Manifesto figure image"
+        />
+        <Field
+          label="Figure caption"
+          value={s.manifesto_caption || ""}
+          onChange={(e) => set("manifesto_caption", e.target.value)}
+          data-testid="splash-manifesto-caption"
+        />
+      </div>
+
+      <div className="flex justify-end">
+        <PrimaryButton onClick={save} disabled={saving} data-testid="splash-save-bottom">
+          <Save size={14} /> {saving ? "Saving…" : "Save splash"}
+        </PrimaryButton>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================ CHANNELS (social URLs)
+
+function ChannelsTab({ pw }) {
   const [settings, setSettings] = useState(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    adminGetSettings(pw).then(setSettings).catch(() => toast.error("Could not load settings."));
+    adminGetSettings(pw).then(setSettings).catch(() => toast.error("Could not load channels."));
   }, [pw]);
 
-  if (!settings) return <p className="font-mono text-xs text-bone-mute">Loading settings…</p>;
+  if (!settings) return <p className="font-mono text-xs text-bone-mute">Loading channels…</p>;
 
   const setSocial = (k, v) => setSettings({ ...settings, social: { ...settings.social, [k]: v } });
 
@@ -628,7 +781,7 @@ function SettingsTab({ pw }) {
     setSaving(true);
     try {
       await adminUpdateSettings(pw, settings);
-      toast.success("Settings saved. Home updates live.");
+      toast.success("Channels saved.");
     } catch {
       toast.error("Save failed.");
     } finally {
@@ -638,44 +791,26 @@ function SettingsTab({ pw }) {
 
   return (
     <div className="space-y-6 max-w-3xl">
-      <h2 className="font-serif text-2xl text-bone">Studio settings</h2>
-
-      <div className="bracket-corners p-6 bg-ink-900/60 space-y-5">
-        <Field
-          label="Tagline (hero CTA button text)"
-          value={settings.tagline}
-          onChange={(e) => setSettings({ ...settings, tagline: e.target.value })}
-          data-testid="settings-tagline"
-          hint="Shown in the hero's primary button on the home page."
-        />
-        <TextArea
-          label="Hero subtitle (optional override)"
-          value={settings.hero_subtitle || ""}
-          onChange={(e) => setSettings({ ...settings, hero_subtitle: e.target.value })}
-          rows={2}
-          data-testid="settings-hero-subtitle"
-          hint="Leave blank to use the default copy."
-        />
+      <div className="flex items-center justify-between">
+        <h2 className="font-serif text-2xl text-bone">Open channels</h2>
+        <PrimaryButton onClick={save} disabled={saving} data-testid="channels-save">
+          <Save size={14} /> {saving ? "Saving…" : "Save channels"}
+        </PrimaryButton>
       </div>
-
       <div className="bracket-corners p-6 bg-ink-900/60 space-y-5">
-        <h3 className="font-serif text-xl text-bone">Open channels</h3>
+        <p className="font-mono text-[11px] tracking-[0.18em] uppercase text-bone-mute">
+          These URLs power the Community cards, the footer, and the featured project's support links.
+        </p>
         {["discord", "twitter", "kickstarter", "patreon", "email"].map((k) => (
           <Field
             key={k}
             label={k}
             value={settings.social?.[k] || ""}
             onChange={(e) => setSocial(k, e.target.value)}
-            data-testid={`settings-social-${k}`}
-            placeholder={k === "email" ? "press@studio.com" : `https://…`}
+            data-testid={`channels-${k}`}
+            placeholder={k === "email" ? "press@studio.com" : "https://…"}
           />
         ))}
-      </div>
-
-      <div className="flex justify-end">
-        <PrimaryButton onClick={save} disabled={saving} data-testid="settings-save">
-          <Save size={14} /> {saving ? "Saving…" : "Save settings"}
-        </PrimaryButton>
       </div>
     </div>
   );
@@ -812,13 +947,14 @@ export default function Admin() {
       </header>
 
       <main className="max-w-6xl mx-auto px-6 md:px-12 py-10">
-        <Tabs defaultValue="projects" className="w-full">
+        <Tabs defaultValue="splash" className="w-full">
           <TabsList className="bg-ink-800/40 border border-gold/15 rounded-none p-0 h-auto flex flex-wrap">
             {[
+              ["splash", "Splash"],
               ["projects", "Projects"],
-              ["art", "Concept art"],
-              ["transmissions", "Transmissions"],
-              ["settings", "Settings"],
+              ["art", "Archive"],
+              ["transmissions", "Signals"],
+              ["settings", "Channels"],
               ["subscribers", "Subscribers"],
             ].map(([v, l]) => (
               <TabsTrigger
@@ -833,6 +969,9 @@ export default function Admin() {
           </TabsList>
 
           <div className="mt-8">
+            <TabsContent value="splash">
+              <SplashTab pw={pw} />
+            </TabsContent>
             <TabsContent value="projects">
               <ProjectsTab pw={pw} projects={data?.projects || []} refresh={refresh} />
             </TabsContent>
@@ -843,7 +982,7 @@ export default function Admin() {
               <UpdatesTab pw={pw} updates={data?.updates || []} refresh={refresh} />
             </TabsContent>
             <TabsContent value="settings">
-              <SettingsTab pw={pw} />
+              <ChannelsTab pw={pw} />
             </TabsContent>
             <TabsContent value="subscribers">
               <SubscribersTab pw={pw} />
