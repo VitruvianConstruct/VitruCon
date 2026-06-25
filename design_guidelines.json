@@ -1,0 +1,172 @@
+{
+  "theme": "dark",
+  "archetype": "5",
+  "archetype_name": "Luxury / Mystery",
+  "design_philosophy": "A mysterious, enigmatic web-based studio site for Vitruvian Construct. It introduces the brand, teases upcoming games, showcases concept art, and funnels visitors to community channels. The site feels like an artifact from a strange world, blending a renaissance-meets-machine motif with occult undertones. Handcrafted sketchbook energy meets arcane mechanical precision.",
+  "colors": {
+    "background": {
+      "primary": "#090b10",
+      "secondary": "#12141a",
+      "tertiary": "#1a1c23",
+      "overlay": "rgba(9, 11, 16, 0.85)"
+    },
+    "text": {
+      "primary": "#e6dfd1",
+      "secondary": "#a39f93",
+      "muted": "#6b675b",
+      "accent": "#c5a977"
+    },
+    "accents": {
+      "dim_gold": "#c5a977",
+      "oxidized_brass": "#8a9a86",
+      "muted_crimson": "#8b3a3a",
+      "deep_blue_black": "#050608"
+    },
+    "borders": {
+      "subtle": "rgba(197, 169, 119, 0.15)",
+      "strong": "rgba(197, 169, 119, 0.4)",
+      "mechanical": "#2a2c33"
+    }
+  },
+  "typography": {
+    "fonts": {
+      "heading": "Cormorant Garamond, serif",
+      "body": "JetBrains Mono, monospace",
+      "accent": "Cinzel, serif"
+    },
+    "scale": {
+      "h1": "text-5xl sm:text-6xl tracking-tight leading-none font-medium",
+      "h2": "text-3xl sm:text-4xl tracking-tight leading-snug",
+      "h3": "text-xl sm:text-2xl tracking-normal leading-relaxed",
+      "body": "text-base leading-relaxed",
+      "small": "text-sm uppercase tracking-[0.2em]"
+    },
+    "usage": {
+      "headings": "Use Cormorant Garamond for all primary headings. Keep font weight moderate (e.g., font-medium or font-semibold) to maintain elegant renaissance feel.",
+      "body": "Use JetBrains Mono for body copy, tags, timestamps, and lore fragments to give a mechanical, typewriter, or blueprint energy.",
+      "overline": "Use JetBrains Mono, text-xs, uppercase, wide tracking (tracking-[0.2em]) and dim gold color."
+    }
+  },
+  "layout_spacing": {
+    "philosophy": "Generous spacing. Use asymmetry and grid overlaps to create visual tension. Components should feel like fragments of a larger mechanical artifact.",
+    "containers": "max-w-7xl mx-auto px-6 md:px-12",
+    "section_padding": "py-24 md:py-32",
+    "grid_patterns": {
+      "bento_tetris": "grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12",
+      "bento_control": "grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6"
+    }
+  },
+  "surfaces_and_borders": {
+    "cards": "bg-[#12141a] border border-[#c5a977]/20 rounded-none relative overflow-hidden",
+    "glass": "bg-[#090b10]/80 backdrop-blur-xl border-b border-[#c5a977]/10",
+    "mechanical_accents": "Before/after pseudo-elements for crosshairs (+), corner brackets (⌜ ⌟), and 1px lines extending beyond containers."
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-transparent border border-[#c5a977] text-[#c5a977] px-6 py-3 uppercase tracking-widest text-sm font-mono hover:bg-[#c5a977] hover:text-[#090b10] transition-colors duration-300",
+      "secondary": "text-[#a39f93] hover:text-[#e6dfd1] underline decoration-[#c5a977]/30 hover:decoration-[#c5a977] underline-offset-4 transition-all duration-300 font-mono text-sm"
+    },
+    "navigation": "Sticky glassmorphic header (bg-[#090b10]/80 backdrop-blur-xl). Logo on left (Cormorant Garamond, text-xl), nav links center (JetBrains Mono, text-sm, uppercase).",
+    "inputs": "bg-transparent border-b border-[#c5a977]/30 focus:border-[#c5a977] outline-none text-[#e6dfd1] font-mono py-2 rounded-none focus:ring-0",
+    "tags": "border border-[#8a9a86]/30 text-[#8a9a86] px-2 py-1 text-xs uppercase tracking-wider inline-block"
+  },
+  "animation_and_motion": {
+    "hover": "Subtle glows, text color shifts, and brackets moving slightly outward.",
+    "scroll": "Fade in and slight upward translation (y: 20 -> 0) using framer-motion.",
+    "marquee": "Very slow, smooth drift with JetBrains Mono. Use for 'TRANSMISSION FEED // LORE FRAGMENT // SYSTEM ACTIVE' with low opacity (#a39f93/20)."
+  },
+  "media": {
+    "image_treatment": "Images should have a dark, moody overlay (e.g., bg-black/40) or mix-blend-luminosity to integrate with the dark theme. Borders should be 1px solid subtle gold.",
+    "urls": [
+      {
+        "category": "hero_background",
+        "url": "https://images.pexels.com/photos/6485526/pexels-photo-6485526.jpeg",
+        "description": "Dark grunge texture to be used as a low-opacity background overlay or hero background."
+      },
+      {
+        "category": "featured_project",
+        "url": "https://images.pexels.com/photos/34945014/pexels-photo-34945014.jpeg",
+        "description": "Albino axolotl swimming in a dark tank, representing the 'Irresponsible Axolotl' featured project."
+      },
+      {
+        "category": "concept_art",
+        "url": "https://images.unsplash.com/photo-1625212895824-ff2232e9f304",
+        "description": "Renaissance style sketch of two hands reaching out. Use in Concept Art Archive or Manifesto."
+      },
+      {
+        "category": "concept_art",
+        "url": "https://images.pexels.com/photos/6714357/pexels-photo-6714357.jpeg",
+        "description": "Close up of pencil sketch lines. Use in Concept Art Archive."
+      },
+      {
+        "category": "concept_art",
+        "url": "https://images.pexels.com/photos/5026437/pexels-photo-5026437.jpeg",
+        "description": "Hands holding a sketchbook. Use in Concept Art Archive."
+      },
+      {
+        "category": "concept_art",
+        "url": "https://images.unsplash.com/photo-1712685884811-5f1cf73e3d32",
+        "description": "Drawing of a woman sitting down. Use in Concept Art Archive."
+      }
+    ]
+  },
+  "sections": [
+    {
+      "name": "Hero / Entry Sequence",
+      "structure": "Full-screen min-h-screen. Center aligned content. Background image with heavy dark overlay. Logo text prominent.",
+      "elements": "Tagline: 'Enter the Construct'. Primary CTA button. Decorative mechanical borders."
+    },
+    {
+      "name": "Studio Manifesto",
+      "structure": "Asymmetrical 12-column grid. Text spanning 6 columns. Overlapping image (hands sketch) on the right side.",
+      "elements": "Heading 'Studio Manifesto', paragraphs, monospace overlines."
+    },
+    {
+      "name": "Featured Project: Irresponsible Axolotl",
+      "structure": "Control Room Grid. Main image spans 2 columns, info spans 2 columns.",
+      "elements": "Key art image, 1-paragraph pitch, dev status tags (e.g., 'STATUS: PRE-ALPHA'), wishlist/support CTAs."
+    },
+    {
+      "name": "Concept Art Archive",
+      "structure": "Masonry or Bento grid for images.",
+      "elements": "Category filters (environments, characters, etc.) as monospace tags. Grid of sketches."
+    },
+    {
+      "name": "Signals / Transmission Feed",
+      "structure": "Vertical timeline with a single 1px mechanical line on the left. Cryptic field logs.",
+      "elements": "Timestamp (monospace), title, short text update."
+    },
+    {
+      "name": "World Fragments / Lore Teasers",
+      "structure": "Scattered text blocks. Large blockquotes in Cormorant Garamond. Floating symbols.",
+      "elements": "Quotes, mechanical crosshairs."
+    },
+    {
+      "name": "Community + Support",
+      "structure": "3 or 4 column grid of cards.",
+      "elements": "Discord, Twitter/X, Kickstarter, Patreon. Styled as 'inner circle invitations'."
+    },
+    {
+      "name": "Newsletter / Email Signup",
+      "structure": "Centered block. 'Receive Transmissions'.",
+      "elements": "Input form, submit button. Mechanical terminal style."
+    },
+    {
+      "name": "Footer",
+      "structure": "Simple, border-t border-dim_gold/20. Large symbolic typography.",
+      "elements": "Navigation, social links."
+    }
+  ],
+  "accessibility": {
+    "contrast": "Ensure text meets 4.5:1 ratio against dark background. The dim gold and bone white have sufficient contrast against #090b10.",
+    "testing_attributes": "All interactive elements must include data-testid attributes (e.g., data-testid='hero-cta-button')."
+  },
+  "instructions_to_main_agent": [
+    "Follow the JSON design strictly. Use the provided colors, fonts, and images.",
+    "Set up Tailwind config to include the custom fonts (Cormorant Garamond, JetBrains Mono) and custom colors.",
+    "Implement the layout as a single-page scrolling experience with smooth scrolling (e.g., Lenis if possible, or standard CSS smooth scroll).",
+    "Build the admin panel as a separate route (e.g., /admin) with a simple password-protection (mocked or simple auth) to manage projects/art/updates.",
+    "Ensure all components use standard HTML/Tailwind for layout and Shadcn for interactive logic (customized to match the dark/mechanical theme).",
+    "Include 'data-testid' attributes on all clickable elements."
+  ]
+}
