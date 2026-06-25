@@ -38,12 +38,33 @@ Kickstarter, Patreon, and an in-DB email newsletter. Admin panel to manage conte
   dim gold / bone / oxidized brass / muted crimson palette, mechanical corner brackets,
   scanlines, slow rotating glyph, drift marquee, grain overlay
 - Backend APIs:
-  - Public: `/api/site`, `/api/projects`, `/api/concept-art?category=`, `/api/updates`, `/api/subscribe`
+  - Public: `/api/site`, `/api/projects`, `/api/concept-art?category=`, `/api/updates`, `/api/subscribe`, `/api/settings`
   - Admin (X-Admin-Password header): `/api/admin/verify`, `/admin/subscribers`,
-    `/admin/projects` (POST/DELETE), `/admin/concept-art` (POST/DELETE), `/admin/updates` (POST/DELETE)
-- Auto-seeded on startup: Irresponsible Axolotl + 6 concept-art plates + 3 transmissions
+    `/admin/projects` (POST/PUT/DELETE), `/admin/concept-art` (POST/PUT/DELETE),
+    `/admin/updates` (POST/PUT/DELETE), `/admin/settings` (GET/PUT), `/admin/upload` (multipart)
+  - Static `/api/uploads/{filename}` serves uploaded assets via ingress
 - Admin console at `/admin` with passphrase `vitruvian-admin-2025`
-- testing_agent_v3 — 17/17 backend pytest pass; frontend flows verified
+- testing_agent_v3 — 17/17 backend pass initial run
+
+## What's Been Implemented — 2025-12-26 (v2)
+- **Cozy-chaos rebrand** of featured project "Irresponsible Axolotl": new copy describing
+  Kiddo (middle-schooler, child of super-genius scientists) and Lottie the Axolotl
+  (bigger, stronger, smarter, more reckless). Status now "COZY CHAOS // IN DEVELOPMENT",
+  tags "Cozy Chaos / Slice of Life", protagonist=Kiddo, companion=Lottie. Hero image is
+  the classroom key-art.
+- **Re-seeded Concept Art Archive** with the studio's uploaded plates: Irresponsible
+  Axolotl — Key Art, The Great Escape (cottage chase), Me & My Best Buddy Lottie,
+  Lottie — Mood Sheet (Clean), Lottie — Mood Sheet (Studies). Grayscale treatment
+  removed; colorful art now renders true-to-color.
+- **Workshop Console (admin v2)** — shadcn Tabs (Projects · Concept art · Transmissions
+  · Settings · Subscribers). Each item now has inline Edit/Save/Delete with confirmation.
+- **Image input control** — paste URL or upload directly (multipart) to `/api/admin/upload`;
+  preview thumbnail, clear button, hosted under `/api/uploads/`.
+- **Studio Settings** — admin form to edit tagline, hero subtitle, and all social links
+  (Discord, Twitter/X, Kickstarter, Patreon, email); writes go to `site_settings`
+  collection and are returned by `GET /api/site` live.
+- **Subscribers** — CSV export of all signups.
+- testing_agent_v3 — 27/27 backend pass; all frontend admin flows verified.
 
 ## Prioritized Backlog
 - **P1** Wire real Discord/Twitter/X/Kickstarter/Patreon URLs (currently placeholder homepages)
