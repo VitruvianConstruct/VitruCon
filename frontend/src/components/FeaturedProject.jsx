@@ -1,3 +1,5 @@
+import { resolveImage } from "@/lib/api";
+
 export default function FeaturedProject({ project, social }) {
   if (!project) return null;
 
@@ -37,11 +39,11 @@ export default function FeaturedProject({ project, social }) {
           <div className="lg:col-span-7">
             <div className="relative bracket-corners h-full">
               <img
-                src={project.hero_image}
+                src={resolveImage(project.hero_image)}
                 alt={project.title}
-                className="w-full h-full aspect-[16/11] object-cover grayscale-[35%] contrast-110 brightness-75"
+                className="w-full h-full aspect-[16/11] object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-tr from-ink-950 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-tr from-ink-950/60 via-transparent to-transparent pointer-events-none" />
               <div className="absolute bottom-4 left-4 font-mono text-[10px] tracking-[0.28em] uppercase text-bone-dim bg-ink-900/80 px-2 py-1">
                 Key Art / Plate II.a
               </div>
@@ -53,10 +55,10 @@ export default function FeaturedProject({ project, social }) {
             <div className="space-y-6">
               <div className="flex flex-wrap gap-2">
                 <span className="border border-gold/40 text-gold px-3 py-1 text-[10px] tracking-[0.28em] uppercase">
-                  Pre-Alpha
+                  Cozy Chaos
                 </span>
                 <span className="border border-brass/40 text-brass px-3 py-1 text-[10px] tracking-[0.28em] uppercase">
-                  Narrative Exploration
+                  Slice of Life
                 </span>
                 <span className="border border-crimson/50 text-crimson/90 px-3 py-1 text-[10px] tracking-[0.28em] uppercase">
                   Single Player
@@ -69,8 +71,8 @@ export default function FeaturedProject({ project, social }) {
 
               <dl className="grid grid-cols-2 gap-y-3 gap-x-6 border-t border-gold/10 pt-6 font-mono text-xs">
                 {[
-                  ["Lead", "Vitruvian Atelier"],
-                  ["Engine", "Custom / Godot"],
+                  ["Protagonist", "Kiddo"],
+                  ["Companion", "Lottie the Axolotl"],
                   ["Platforms", "PC / Mac"],
                   ["Window", "Forthcoming"],
                 ].map(([k, v]) => (

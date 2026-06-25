@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { resolveImage } from "@/lib/api";
 
 const ALL = "all";
 const CATEGORIES = [
@@ -76,11 +77,11 @@ export default function ConceptArtArchive({ art = [] }) {
                 className={`${cls} group relative bracket-corners overflow-hidden text-left bg-ink-800`}
               >
                 <img
-                  src={piece.image}
+                  src={resolveImage(piece.image)}
                   alt={piece.title}
-                  className="w-full aspect-[4/3] object-cover grayscale contrast-105 brightness-90 group-hover:brightness-110 group-hover:grayscale-0 transition-all duration-700"
+                  className="w-full aspect-[4/3] object-cover brightness-95 group-hover:brightness-110 transition-all duration-700"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/30 to-transparent opacity-90 group-hover:opacity-70 transition-opacity" />
+                <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/20 to-transparent opacity-80 group-hover:opacity-50 transition-opacity" />
                 <div className="absolute bottom-0 left-0 right-0 p-4 flex items-end justify-between">
                   <div>
                     <div className="overline text-[10px] mb-1">{piece.category}</div>
@@ -111,7 +112,7 @@ export default function ConceptArtArchive({ art = [] }) {
         >
           <div className="max-w-5xl w-full" onClick={(e) => e.stopPropagation()}>
             <div className="bracket-corners relative">
-              <img src={open.image} alt={open.title} className="w-full max-h-[75vh] object-contain" />
+              <img src={resolveImage(open.image)} alt={open.title} className="w-full max-h-[75vh] object-contain" />
             </div>
             <div className="mt-6 flex items-start justify-between gap-6">
               <div>
