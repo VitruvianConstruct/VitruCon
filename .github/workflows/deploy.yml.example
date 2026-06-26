@@ -25,9 +25,6 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,9 +38,11 @@ jobs:
 
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+        # Root package.json's postinstall hook installs frontend/ deps automatically.
 
       - name: Build
         run: npm run build
+        # Builds frontend/ then copies output to ./build at repo root.
 
       - name: Deploy to IONOS Deploy Now
         uses: ionos-deploy-now/deploy-action@v1
@@ -53,4 +52,4 @@ jobs:
           project-id: ${{ vars.IONOS_PROJECT_ID }}
           branch-id: ${{ vars.IONOS_BRANCH_ID }}
           remote-host: ${{ vars.IONOS_REMOTE_HOST }}
-          dist-folder: frontend/build
+          dist-folder: build

@@ -1,0 +1,14 @@
+{
+  "name": "vitruvian-construct-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Vitruvian Construct studio website — root build proxy for IONOS Deploy Now. The actual React app lives in /frontend.",
+  "scripts": {
+    "postinstall": "npm --prefix frontend install --no-audit --no-fund",
+    "build": "rm -rf build && npm --prefix frontend run build && cp -r frontend/build build",
+    "start": "npm --prefix frontend start"
+  },
+  "engines": {
+    "node": ">=18 <23"
+  }
+}

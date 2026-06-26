@@ -68,9 +68,9 @@ can move to a full-stack hosting setup later without rewriting anything.
    |---|---|---|
    | **Build step** | NodeJS | (the default) |
    | **Versions** | `20` | The Node.js *version number*, not the word "NodeJS". `20` is the current LTS. |
-   | **Commands** (one per line) | `cd frontend && npm install`<br>`cd frontend && npm run build` | **Use `npm`, not `yarn`** — yarn is not on IONOS's NodeJS image (causes the `error 127: command not found`). The `cd frontend` is required because the React app lives in the `frontend/` sub-folder of this monorepo. |
+   | **Commands** (one per line) | `npm install`<br>`npm run build` | **Use `npm`, not `yarn`** — yarn is not on IONOS's NodeJS image (causes the `error 127: command not found`). No `cd frontend` needed — the repo root has a `package.json` that proxies the build into `frontend/` automatically. |
    | **Environment variables** | leave defaults (`CI=true`, `SITE_URL=$IONOS_APP_URL`) | |
-   | **Output path** (Publish directory) | `frontend/build` | Relative to repo root — same nesting as the build commands. |
+   | **Output path** (Publish directory) | `build` | The root build script copies `frontend/build` to `./build` so the IONOS upload step finds it at the repo root. |
 
    Then click **Next Step: Summary** → **Deploy**.
 
@@ -78,6 +78,16 @@ can move to a full-stack hosting setup later without rewriting anything.
    _Domain → Connect a domain_. SSL is issued automatically.
 
 After that, **every `git push` to `main` rebuilds and publishes the site automatically.**
+
+### Why a root-level `package.json`?
+The React app lives in `frontend/`, but IONOS Deploy Now expects the build to
+run from the repository root. The root `package.json` solves this with two
+proxy scripts:
+- `npm install` at root → `postinstall` hook runs `npm install` inside `frontend/`
+- `npm run build` at root → builds `frontend/`, then copies the output to `./build`
+
+This lets you keep the clean `frontend/` / `backend/` separation **and** match
+IONOS's expected layout. No working-directory tweaking required.
 
 ### Why `npm` and not `yarn`?
 IONOS Deploy Now's NodeJS build image ships with `npm` only, not `yarn`. Running
@@ -88,6 +98,28 @@ includes:
   peer-dep conflict resolves without `--force`
 
 You can still run `yarn` locally on your own machine — both work.
+
+### Troubleshooting
+
+**"Node.js 20 is deprecated … forced to run on Node.js 24"** — this is a
+GitHub Actions *runner-level* warning about `actions/checkout` and
+`actions/setup-node` using Node 20 internally. It does NOT affect your app's
+Node version (which is still 20 as you set it). Safe to ignore.
+
+**Build fails with exit code 1 right after "Process completed"** — open the
+full build log and scroll up to the first red line. Almost always one of:
+- A real compile error in `frontend/src/*` (a typo in your JSON or JSX).
+- A new dependency added to `frontend/package.json` without re-committing
+  `frontend/package-lock.json`. Run `npm install` locally, commit the updated
+  lockfile, push.
+
+**"yarn: command not found" / exit 127** — your build commands still say
+`yarn …`. Change them to `npm install` and `npm run build`.
+
+**404 on direct page refresh (e.g. `/admin`)** — `frontend/public/.htaccess`
+isn't being uploaded. Check the Output path is `build` (not `build/static`),
+and confirm `.htaccess` exists in the deployed bucket via the IONOS dashboard
+file browser.
 
 ### If you prefer to manage the workflow yourself
 

@@ -1,0 +1,24 @@
+{
+  "summary": "Iteration 6 — IONOS Deploy Now build verified using a CLEAN sandbox at /tmp/ionos_root with ONLY /app/package.json + /app/frontend copied in, node_modules removed, and commands run FROM THE SANDBOX ROOT (no `cd frontend`). `npm install --no-audit --no-fund` exits 0 in ~13.5s (1513 packages; postinstall hook installs frontend/ deps automatically). `npm run build` exits 0 in ~28s and produces /sandbox/build/ at the SANDBOX ROOT (the IONOS upload location) containing: index.html (5057 B), .htaccess (1178 B), asset-manifest.json, static/js/main.5b2aa643.js (105.87 kB gz), static/css/main.025eef20.css (11.47 kB gz), content/images/*.png (5 PNGs: kiddo-classroom, kiddo-cottage, lottie-buddy, lottie-moods-clean, lottie-moods-rough). /sandbox/frontend/build/ also exists (source-of-truth). 2nd `npm run build` run is idempotent — still exit 0, NO nested build/build/ dir (the `rm -rf build` clears it before copy). /app/package.json scripts verified: postinstall='npm --prefix frontend install --no-audit --no-fund', build='rm -rf build && npm --prefix frontend run build && cp -r frontend/build build', engines.node='>=18 <23'. README updated: IONOS section commands are `npm install` + `npm run build`, Output path = `build` (not frontend/build), Node version 20, and the Node 24 deprecation warning is documented as harmless. Live preview render checks all PASS: hero-title='We build invented beings from parchment & brass.', featured-project-section contains 'Irresponsible Axolotl' AND 'COZY CHAOS', exactly 3 fragment-* cards render, /admin route shows the static landing with data-testid='admin-return-home' visible, ZERO /api/* network requests on home load.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": ["/app/test_reports/iteration_6.json"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "engines.node='>=18 <23' in root package.json — IONOS UI is set to Node 20 which fits the range. Consider widening to allow Node 22 LTS if IONOS bumps in future.",
+    "Root package.json scripts.start='npm --prefix frontend start' is convenient for local dev but the README still tells users to `cd frontend && npm start` — both work; minor doc inconsistency only, not blocking.",
+    "Second build emits the standard CRA 'yarn global add serve' tip even though we deploy via npm/IONOS. Cosmetic only — CRA boilerplate, not changeable without ejecting."
+  ],
+  "updated_files": [],
+  "success_rate": {"build": "100% (npm install + npm run build both exit 0 from sandbox ROOT; idempotent on 2nd run)", "frontend_static_render": "100% (5/5 live UI assertions pass, 0 /api/* calls)"},
+  "test_credentials": "N/A — static-mode deploy verification.",
+  "seed_data_creation": "None. Used disposable /tmp/ionos_root scratch dir, removed after verification.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "IONOS root-proxy build fix verified end-to-end. Simulation method: copy /app/package.json + /app/frontend (minus node_modules) into /tmp/ionos_root, run `npm install --no-audit --no-fund` then `npm run build` FROM /tmp/ionos_root (NOT cd-ing into frontend). Both must exit 0 and produce /tmp/ionos_root/build/ with index.html + .htaccess + static/ + content/images/*.png. The .npmrc lives at frontend/.npmrc (legacy-peer-deps=true), NOT at repo root — required for npm to resolve the react-day-picker vs date-fns peer-dep conflict. If a future iteration ever moves the build OUT of frontend/ or removes the postinstall hook, this verification will need to be re-done.",
+  "rca of the issue": "Original IONOS 'exit 1' (after the earlier yarn->npm switch) was caused by IONOS auto-generating a workflow that runs `npm install` and `npm run build` at the REPOSITORY ROOT, with Output path = `build`. The app lived in /frontend, so root-level `npm install` had no package.json to install and root-level `npm run build` had no build script. Fix: add /app/package.json acting as a thin proxy — postinstall hook delegates install into frontend/, and the build script runs frontend's craco build and copies frontend/build to ./build so IONOS's default upload path finds it. This iteration confirms the proxy works in a clean environment matching IONOS exactly, and that the build is idempotent (re-runs don't nest build/build/)."
+}
