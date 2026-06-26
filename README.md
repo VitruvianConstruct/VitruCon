@@ -44,9 +44,7 @@ can move to a full-stack hosting setup later without rewriting anything.
 ### One-time setup
 
 1. **Sign up for IONOS Deploy Now** at <https://www.ionos.com/hosting/deploy-now>
-   (free Starter tier is enough for a small studio site).
-
-2. **Push this repo to GitHub.** From the project root:
+   and **push this repo to GitHub** first:
    ```bash
    git init
    git add .
@@ -56,25 +54,46 @@ can move to a full-stack hosting setup later without rewriting anything.
    git push -u origin main
    ```
 
-3. **Create a new project in the Deploy Now dashboard:**
-   - Click **New Project** → **Connect GitHub** → authorise the IONOS app.
-   - Pick your repository and the `main` branch.
-   - When asked for the **app source directory**, enter: `frontend`
-   - When asked for the **framework**, choose: `React` (Create React App).
-   - When asked for the **build command**: `yarn build`
-   - When asked for the **output / dist folder**: `build`
-   - Deploy Now will commit a workflow file to `.github/workflows/<branch>.yaml`
-     and trigger the first build. Done.
+2. **In the Deploy Now dashboard → "New Project" → connect GitHub** and pick the
+   repository + the `main` branch. (Repository step ✓)
 
-4. **Point your domain** (optional) at the Deploy Now site from the dashboard:
+3. **Select a project package: choose `Starter`** (free, 3 of 3 available).
+   - When asked about prefill, pick **"Do not prefill workflow"** — Plain HTML
+     prefill doesn't suit a React build.
+
+4. **Define the build steps** — this is the screen most people get tripped up
+   on. Fill it in **exactly** like this:
+
+   | Field | Value | Notes |
+   |---|---|---|
+   | **Build step** | NodeJS | (the default) |
+   | **Versions** | `20` | The Node.js *version number*, not the word "NodeJS". `20` is the current LTS. |
+   | **Commands** (one per line) | `cd frontend && npm install`<br>`cd frontend && npm run build` | **Use `npm`, not `yarn`** — yarn is not on IONOS's NodeJS image (causes the `error 127: command not found`). The `cd frontend` is required because the React app lives in the `frontend/` sub-folder of this monorepo. |
+   | **Environment variables** | leave defaults (`CI=true`, `SITE_URL=$IONOS_APP_URL`) | |
+   | **Output path** (Publish directory) | `frontend/build` | Relative to repo root — same nesting as the build commands. |
+
+   Then click **Next Step: Summary** → **Deploy**.
+
+5. **Point your domain** (optional) at the site from the dashboard:
    _Domain → Connect a domain_. SSL is issued automatically.
 
 After that, **every `git push` to `main` rebuilds and publishes the site automatically.**
 
+### Why `npm` and not `yarn`?
+IONOS Deploy Now's NodeJS build image ships with `npm` only, not `yarn`. Running
+`yarn build` there returns **exit code 127 — "command not found"**. The repo
+includes:
+- `frontend/package-lock.json` so `npm install` is fully reproducible
+- `frontend/.npmrc` with `legacy-peer-deps=true` so the shadcn / react-day-picker
+  peer-dep conflict resolves without `--force`
+
+You can still run `yarn` locally on your own machine — both work.
+
 ### If you prefer to manage the workflow yourself
 
 Rename `.github/workflows/deploy.yml.example` to `.github/workflows/deploy.yml` and
-set these in the GitHub repo settings (the values come from the Deploy Now dashboard):
+set these in the GitHub repo settings (values come from the Deploy Now dashboard
+after you've created the project):
 
 - Secrets → `IONOS_DEPLOY_NOW_API_KEY`
 - Variables → `IONOS_PROJECT_ID`, `IONOS_BRANCH_ID`, `IONOS_REMOTE_HOST`
@@ -134,15 +153,16 @@ Commit. The home page now picks from 6 fragments instead of 5 (3 random per load
 
 ```bash
 cd frontend
-yarn install
-yarn start          # http://localhost:3000
+npm install          # or `yarn install` — both work locally
+npm start            # http://localhost:3000
 ```
 
-Build production bundle:
+Build production bundle (this is exactly what IONOS will run):
 
 ```bash
 cd frontend
-yarn build          # output in frontend/build/
+npm install
+npm run build        # output in frontend/build/
 ```
 
 ---

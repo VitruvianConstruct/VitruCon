@@ -1,0 +1,25 @@
+{
+  "summary": "Iteration 5 — IONOS Deploy Now build verification (static frontend, no backend). Simulated the exact IONOS build path in a clean sandbox dir using ONLY the files committed under /app/frontend (no node_modules carryover). `npm install --no-audit --no-fund` exits 0 in 21s (1513 packages, no peer-dep errors thanks to .npmrc legacy-peer-deps). `npm run build` exits 0 in 26s and produces every required artefact: build/index.html (5057 B), build/.htaccess (1178 B), build/static/js/main.5b2aa643.js (105.87 kB gz), build/static/css/main.025eef20.css (11.47 kB gz), and all 5 PNGs under build/content/images/ (kiddo-classroom, kiddo-cottage, lottie-buddy, lottie-moods-clean, lottie-moods-rough). Static-mode home renders correctly on the running preview URL: hero-title='We build invented beings from parchment & brass.', featured-project-section contains 'Irresponsible Axolotl' and 'COZY CHAOS', 3 fragment-* cards render, /admin shows 'Content is managed in GitHub' landing with data-testid='admin-return-home'. NETWORK CHECK: 0 requests to /api/* on home page load — fully static. README contains all required strings: 'cd frontend && npm install', \"Use `npm`, not `yarn`\", 'frontend/build', and Versions=20. Lockfile is 790 KB (>100 KB requirement). All 5 requested checks PASS.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/test_reports/iteration_5.json"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "npm warn deprecated uuid@8.3.2 during install — not blocking but worth bumping to uuid@11 in a future cleanup pass.",
+    "Build output is healthy (~106 kB gz JS, ~11 kB gz CSS) — well within IONOS limits."
+  ],
+  "updated_files": [],
+  "success_rate": {"build": "100% (npm install + npm run build both exit 0)", "frontend_static_render": "100% (5/5 UI checks pass, 0 /api calls)"},
+  "test_credentials": "Not applicable — static-mode build verification.",
+  "seed_data_creation": "None. Used isolated /tmp/ionos_test/ scratch dir for the clean build, deleted after verification.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Static-mode deploy verified end-to-end. /app/frontend/.npmrc (legacy-peer-deps=true) + /app/frontend/package-lock.json (790 KB) are present and required for IONOS. The IONOS build path is `cd frontend && npm install --no-audit --no-fund` then `cd frontend && npm run build`, output path `frontend/build`, Node 20. Home page does ZERO /api/* calls — purely static JSON imports from src/content/*.json. If a future iteration restores dynamic content, the no-/api assertion will break.",
+  "rca of the issue": "Root cause of the original IONOS 'error 127': yarn binary is not present on IONOS Deploy Now's NodeJS build image, so any `yarn install` or `yarn build` step exits with shell error 127 (command not found). Fix applied by main agent: switch the build commands to npm (`cd frontend && npm install && npm run build`), commit a package-lock.json for reproducibility, and add .npmrc with legacy-peer-deps=true so npm tolerates the react-day-picker vs date-fns peer-range mismatch that otherwise aborts a clean install. Verification in this iteration confirms the new path completes successfully from a clean checkout with only npm/node 20, matching the IONOS environment exactly."
+}
