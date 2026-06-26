@@ -80,9 +80,6 @@ export default function Footer({ social = {}, settings = {} }) {
         <div className="mt-16 pt-8 border-t border-gold/10 flex flex-col md:flex-row items-center justify-between gap-4 font-mono text-[10px] tracking-[0.28em] uppercase text-bone-mute">
           <span data-testid="footer-copyright">{copyright}</span>
           <span className="text-gold/70" data-testid="footer-right-label">{rightLabel}</span>
-        //  <a href="/admin" data-testid="footer-admin-link" className="hover:text-gold transition-colors">
-        //    ✦ Atelier Login
-        //  </a>
         </div>
       </div>
 
