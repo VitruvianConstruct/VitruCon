@@ -23,7 +23,7 @@ export default function Footer({ social = {}, settings = {} }) {
                 <line x1="12" y1="1" x2="12" y2="23" />
               </svg>
               <div>
-                <div className="font-serif text-xl text-bone" data-testid="footer-studio-title">Vitruvian Construct</div>
+                <div className="font-serif text-xl text-bone" data-testid="footer-studio-title">*Vitruvian* Construct</div>
                 <div className="font-mono text-[10px] tracking-[0.32em] uppercase text-bone-mute" data-testid="footer-studio-subtitle">
                   {studioSubtitle}
                 </div>
