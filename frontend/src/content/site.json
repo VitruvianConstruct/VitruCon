@@ -1,25 +1,25 @@
 {
-  "tagline": "Enter the Construct.",
+  "tagline": "Games built like field notebooks.",
 
   "hero": {
     "overline": "Studio · Opvs Primvm · MMXXVI",
-    "title": "We build *invented beings*\nfrom *parchment* & *brass*.",
-    "body": "Vitruvian Construct is a small studio assembling games like field notebooks — equal parts renaissance sketch, occult diagram, and animate mechanism. The archive below is incomplete. That is intentional.",
+    "title": "We assemble games from *ink*, parchment, and *pizxel*.",
+    "body": "Vitruvian Construct is a small studio designing experiences-- part renaissance sketch, part tactile mechanism. The Archive below is incomplete. This is intentional.",
     "secondary_cta_label": "Receive Transmissions →"
   },
 
   "glyph": {
     "image": null,
     "top_label": "VITRUVIAN · CONSTRUCT",
-    "bottom_label": "MMXXVI · OPVS · I",
+    "bottom_label": "XXV · VI · MMXXVI · OPVS · I",
     "spin": true
   },
 
   "manifesto": {
     "overline": "— Manifesto · §I",
-    "heading": "We treat the studio\nas an *atelier*,\nand every game as a\n*small mechanism*.",
-    "body": "Vitruvian Construct is an independent studio assembling slow, narrative games that feel less like products and more like artefacts — pulled from a workshop somewhere between a renaissance bottega and a cabinet of curiosities.\n\nWe are interested in invented beings: creatures and characters that should not exist but insist on it anyway. We design our mechanics like clockwork: visible, slightly imperfect, occasionally cruel.\n\nEach project ships with its own diagrams, marginalia, and field notes. The game is the centre; the archive around it is the world.",
-    "tags": ["narrative", "handcrafted", "small-team", "long-form"],
+    "heading": "We treat the studio\nas a *workshop*,\nand every game as a\n*living system*.",
+    "body": "Vitruvian Construct is an independent studio crafting engaging,intriguing narrative games that feel less like products and more like artefacts — pulled from a workshop somewhere between a renaissance bottega and a cabinet of curiosities.  With an emphasis on craftsmanship, mechanical depth, and structural mystery, every project is built to be pulled apart and explored.",
+    "tags": [ "narrative", "tactile-design", "small-batch", "systems-driven" ],
     "image": "/content/images/lottie-buddy.png",
     "caption": "Plate I — study, reaching hands"
   },
@@ -37,43 +37,50 @@
   },
 
   "social": {
-    "discord": "https://discord.com/",
-    "twitter": "https://twitter.com/",
+    "reddit": "https://www.reddit.com/r/IrresponsibleAxolotl/",
+    "discord": "https://discord.gg/2DYz9K7Ke",
+    "itch.io": "https://vitrucon.itch.io",
     "kickstarter": "https://www.kickstarter.com/",
     "patreon": "https://www.patreon.com/",
-    "email": "transmissions@vitruvianconstruct.studio"
+    "email": "Allen@VitruCon.com"
   },
 
   "channels": {
+    "reddit": {
+      "tag": "Community",
+      "title": "Join the Discussion on Reddit",
+      "copy": "Connect with the team and fellow builders. Share feedback, view early sketches, and dig into the project logs.",
+      "cta": "Join the Forum"
+    },
     "discord": {
       "tag": "Inner Circle",
       "title": "Join the Discord",
-      "copy": "A small, slow-burning community. Devlogs, sketches, and the occasional buried artefact.",
+      "copy": "We're a small community, talk with the creative team behind our projects! Devlogs, sketches, and the occasional buried artefact.",
       "cta": "Enter Discord"
     },
-    "twitter": {
-      "tag": "Signals",
-      "title": "Follow on Twitter/X",
-      "copy": "Short transmissions, art drops, and field photographs from the studio floor.",
-      "cta": "Follow Signal"
+    "itch.io": {
+      "tag": "Builds",
+      "title": "Find our work on itch.io",
+      "copy": "Early prototypes, design demos, and vertical slices.",
+      "cta": "View the Workbench"
     },
     "kickstarter": {
-      "tag": "Funding",
-      "title": "Back on Kickstarter",
-      "copy": "When the campaign opens, this is where the door will be. Pledge tiers will be carved on bone.",
-      "cta": "Become a Backer"
+      "tag": "Future Project",
+      "title": "Follow on Kickstarter",
+      "copy": "Sign up to be notified when the blueprints are finalized and the campaign goes live.",
+      "cta": "Notify Me on Launch"
     },
     "patreon": {
-      "tag": "Sustain",
+      "tag": "Support",
       "title": "Support on Patreon",
-      "copy": "Monthly transmissions, full-resolution plates, and access to the development atelier.",
-      "cta": "Support the Construct"
+      "copy": "Behind-the-scenes logs, full-resolution design sketches, and early access to the development workshop.",
+      "cta": "View the Tier List"
     }
   },
 
   "footer": {
-    "studio_subtitle": "Studio · Atelier · Workshop",
-    "studio_blurb": "An independent studio assembling slow games like field notebooks. Built in draughty rooms with very good light.",
+    "studio_subtitle": "Studio · Workshop",
+    "studio_blurb": "An independent studio assembling games like field notebooks. Built in draughty rooms with very good lighting.",
     "watermark_text": "Vitruvian Construct",
     "right_label": "Opvs · I · MMXXVI",
     "copyright": "© {year} Vitruvian Construct · All plates reserved"
