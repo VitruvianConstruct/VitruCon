@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { getSitePayload } from "@/lib/api";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Marquee from "@/components/Marquee";
@@ -12,17 +11,28 @@ import Community from "@/components/Community";
 import Newsletter from "@/components/Newsletter";
 import Footer from "@/components/Footer";
 
+import siteJson from "@/content/site.json";
+import projectJson from "@/content/project.json";
+import conceptArtJson from "@/content/concept-art.json";
+import fragmentsJson from "@/content/fragments.json";
+import signalsJson from "@/content/signals.json";
+import { buildSettings } from "@/lib/api";
+
 export default function Home() {
   const [data, setData] = useState(null);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
-    getSitePayload()
-      .then(setData)
-      .catch((e) => {
-        console.error("site fetch failed", e);
-        setError(e);
-      });
+    const settings = buildSettings(siteJson);
+    setData({
+      tagline: siteJson.tagline,
+      settings,
+      social: settings.social,
+      featured_project: projectJson,
+      projects: [projectJson],
+      concept_art: conceptArtJson,
+      updates: signalsJson,
+      fragments: fragmentsJson,
+    });
   }, []);
 
   return (
@@ -36,13 +46,8 @@ export default function Home() {
       <TransmissionFeed updates={data?.updates || []} />
       <WorldFragments fragments={data?.fragments || []} settings={data?.settings} />
       <Community social={data?.social || {}} settings={data?.settings} />
-      <Newsletter />
+      <Newsletter newsletter={data?.settings?.newsletter} />
       <Footer social={data?.social || {}} settings={data?.settings} />
-      {error && (
-        <div className="fixed bottom-4 left-4 z-50 font-mono text-xs bg-crimson/20 border border-crimson text-bone px-4 py-2">
-          Backend signal lost. Displaying skeleton.
-        </div>
-      )}
     </div>
   );
 }

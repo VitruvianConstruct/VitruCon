@@ -1,0 +1,86 @@
+{
+  "tagline": "Enter the Construct.",
+
+  "hero": {
+    "overline": "Studio · Opvs Primvm · MMXXVI",
+    "title": "We build *invented beings*\nfrom *parchment* & *brass*.",
+    "body": "Vitruvian Construct is a small studio assembling games like field notebooks — equal parts renaissance sketch, occult diagram, and animate mechanism. The archive below is incomplete. That is intentional.",
+    "secondary_cta_label": "Receive Transmissions →"
+  },
+
+  "glyph": {
+    "image": null,
+    "top_label": "VITRUVIAN · CONSTRUCT",
+    "bottom_label": "MMXXVI · OPVS · I",
+    "spin": true
+  },
+
+  "manifesto": {
+    "overline": "— Manifesto · §I",
+    "heading": "We treat the studio\nas an *atelier*,\nand every game as a\n*small mechanism*.",
+    "body": "Vitruvian Construct is an independent studio assembling slow, narrative games that feel less like products and more like artefacts — pulled from a workshop somewhere between a renaissance bottega and a cabinet of curiosities.\n\nWe are interested in invented beings: creatures and characters that should not exist but insist on it anyway. We design our mechanics like clockwork: visible, slightly imperfect, occasionally cruel.\n\nEach project ships with its own diagrams, marginalia, and field notes. The game is the centre; the archive around it is the world.",
+    "tags": ["narrative", "handcrafted", "small-team", "long-form"],
+    "image": "/content/images/lottie-buddy.png",
+    "caption": "Plate I — study, reaching hands"
+  },
+
+  "fragments_section": {
+    "overline": "— World Fragments · §V",
+    "heading": "Fragments from the world,\nrecovered *out of order*.",
+    "per_load": 3
+  },
+
+  "channels_section": {
+    "overline": "— Community + Support · §VI",
+    "heading": "Stand inside the\n*inner circle*.",
+    "intro": "We keep our channels few and slow on purpose. Pick a door. Each one opens onto a different angle of the same workshop."
+  },
+
+  "social": {
+    "discord": "https://discord.com/",
+    "twitter": "https://twitter.com/",
+    "kickstarter": "https://www.kickstarter.com/",
+    "patreon": "https://www.patreon.com/",
+    "email": "transmissions@vitruvianconstruct.studio"
+  },
+
+  "channels": {
+    "discord": {
+      "tag": "Inner Circle",
+      "title": "Join the Discord",
+      "copy": "A small, slow-burning community. Devlogs, sketches, and the occasional buried artefact.",
+      "cta": "Enter Discord"
+    },
+    "twitter": {
+      "tag": "Signals",
+      "title": "Follow on Twitter/X",
+      "copy": "Short transmissions, art drops, and field photographs from the studio floor.",
+      "cta": "Follow Signal"
+    },
+    "kickstarter": {
+      "tag": "Funding",
+      "title": "Back on Kickstarter",
+      "copy": "When the campaign opens, this is where the door will be. Pledge tiers will be carved on bone.",
+      "cta": "Become a Backer"
+    },
+    "patreon": {
+      "tag": "Sustain",
+      "title": "Support on Patreon",
+      "copy": "Monthly transmissions, full-resolution plates, and access to the development atelier.",
+      "cta": "Support the Construct"
+    }
+  },
+
+  "footer": {
+    "studio_subtitle": "Studio · Atelier · Workshop",
+    "studio_blurb": "An independent studio assembling slow games like field notebooks. Built in draughty rooms with very good light.",
+    "watermark_text": "Vitruvian Construct",
+    "right_label": "Opvs · I · MMXXVI",
+    "copyright": "© {year} Vitruvian Construct · All plates reserved"
+  },
+
+  "newsletter": {
+    "formspree_endpoint": "",
+    "comment": "Sign up at https://formspree.io/, create a form, then paste your endpoint here (e.g. https://formspree.io/f/xxxxxxx). Until set, the form will show a friendly message."
+  }
+}

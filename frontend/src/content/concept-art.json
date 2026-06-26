@@ -1,0 +1,37 @@
+[
+  {
+    "id": "key-art",
+    "title": "Irresponsible Axolotl — Key Art",
+    "category": "characters",
+    "image": "/content/images/kiddo-classroom.png",
+    "caption": "Shhh… Lottie's on a mission. Classroom infiltration, day one."
+  },
+  {
+    "id": "the-great-escape",
+    "title": "The Great Escape",
+    "category": "environments",
+    "image": "/content/images/kiddo-cottage.png",
+    "caption": "Kiddo gives chase. Cottage garden, late afternoon."
+  },
+  {
+    "id": "best-buddy",
+    "title": "Me & My Best Buddy, Lottie!",
+    "category": "characters",
+    "image": "/content/images/lottie-buddy.png",
+    "caption": "Bedroom workshop. Lottie's amazing, escape-proof aquarium (allegedly)."
+  },
+  {
+    "id": "moods-clean",
+    "title": "Lottie — Mood Sheet (Clean)",
+    "category": "creatures",
+    "image": "/content/images/lottie-moods-clean.png",
+    "caption": "Serene · Confused · Happy · New / Curious · Stuck · Flustered · Overwhelmed · Bored."
+  },
+  {
+    "id": "moods-rough",
+    "title": "Lottie — Mood Sheet (Studies)",
+    "category": "creatures",
+    "image": "/content/images/lottie-moods-rough.png",
+    "caption": "Early colour studies for Lottie's expression set."
+  }
+]

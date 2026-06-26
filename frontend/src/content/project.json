@@ -1,0 +1,20 @@
+{
+  "title": "Irresponsible Axolotl",
+  "slug": "irresponsible-axolotl",
+  "status": "COZY CHAOS // IN DEVELOPMENT",
+  "description": "A cozy chaos slice-of-life game. You play Kiddo, a middle-schooler — child of two super-genius scientists and keeper of Lottie the Axolotl. Lottie is bigger, stronger, smarter, and a great deal more reckless than any axolotl has any business being. Take your eye off her for a second and she will absolutely redecorate the kitchen, hijack a science fair, or accidentally invent something. Navigate middle-school life, keep your impossibly clever pet entertained, and you might just make it through the school year intact.",
+  "hero_image": "/content/images/kiddo-classroom.png",
+  "links": {
+    "kickstarter": "",
+    "patreon": "",
+    "discord": "",
+    "steam": ""
+  },
+  "tags": ["Cozy Chaos", "Slice of Life", "Single Player"],
+  "details": [
+    ["Protagonist", "Kiddo"],
+    ["Companion", "Lottie the Axolotl"],
+    ["Platforms", "PC / Mac"],
+    ["Window", "Forthcoming"]
+  ]
+}

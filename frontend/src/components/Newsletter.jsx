@@ -1,11 +1,16 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { subscribe } from "@/lib/api";
 
-export default function Newsletter() {
+/**
+ * Static-mode newsletter. Posts to a Formspree endpoint if configured in
+ * src/content/site.json → newsletter.formspree_endpoint. If empty, shows a
+ * friendly "channel preparing" message instead of failing silently.
+ */
+export default function Newsletter({ newsletter = {} }) {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
+  const endpoint = newsletter?.formspree_endpoint;
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -13,12 +18,21 @@ export default function Newsletter() {
       toast.error("Transmission requires a valid signal address.");
       return;
     }
+    if (!endpoint) {
+      toast.error("The channel is being wired. Try again soon.");
+      return;
+    }
     setLoading(true);
     try {
-      await subscribe(email);
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      if (!res.ok) throw new Error("Bad response");
       setDone(true);
       toast.success("Channel opened. Transmissions inbound.");
-    } catch (err) {
+    } catch {
       toast.error("Signal lost. Try again in a moment.");
     } finally {
       setLoading(false);
@@ -73,7 +87,9 @@ export default function Newsletter() {
               </button>
             </div>
             <p className="mt-3 font-mono text-[10px] tracking-[0.24em] uppercase text-bone-mute">
-              We will never sell your signal. Unsubscribe at any candle.
+              {endpoint
+                ? "We will never sell your signal. Unsubscribe at any candle."
+                : "Channel preparing. Configure Formspree in src/content/site.json."}
             </p>
           </form>
         )}

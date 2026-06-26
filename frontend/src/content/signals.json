@@ -1,0 +1,23 @@
+[
+  {
+    "id": "tx-001",
+    "title": "Transmission 001 — Meet Kiddo & Lottie",
+    "short_text": "First public reveal. Cozy chaos. Middle school. An axolotl with opinions. We will be okay. Probably.",
+    "cta_link": null,
+    "publish_date": "2026-01-15T00:00:00Z"
+  },
+  {
+    "id": "tx-002",
+    "title": "Transmission 002 — Lottie's Many Moods",
+    "short_text": "Lottie has at least eight documented expressions and almost as many ways to get into trouble. The mood sheet is now in the archive.",
+    "cta_link": null,
+    "publish_date": "2026-01-22T00:00:00Z"
+  },
+  {
+    "id": "tx-003",
+    "title": "Transmission 003 — Wishlist Opens Soon",
+    "short_text": "We are wiring up the wishlist door. When it opens we will raise a flag in this feed and on Discord.",
+    "cta_link": "https://store.steampowered.com/",
+    "publish_date": "2026-01-29T00:00:00Z"
+  }
+]

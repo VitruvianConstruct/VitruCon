@@ -1,0 +1,56 @@
+# Example IONOS Deploy Now workflow (OPTIONAL).
+#
+# The recommended path is to let Deploy Now generate this file automatically
+# when you link the GitHub repo from the IONOS dashboard. It will commit a
+# workflow named after your branch (e.g. .github/workflows/main.yaml) with
+# the correct project-id / branch-id / remote-host values pre-filled.
+#
+# Use this file as a reference if you prefer to manage the workflow yourself.
+# To activate it, rename to `deploy.yml` and set the four GitHub Action
+# variables/secrets noted below.
+#
+# Required GitHub repository settings:
+#   Secrets:    IONOS_DEPLOY_NOW_API_KEY   (created automatically by Deploy Now)
+#   Variables:  IONOS_PROJECT_ID
+#               IONOS_BRANCH_ID
+#               IONOS_REMOTE_HOST          (the SFTP host shown in the DN dashboard)
+
+name: Deploy to IONOS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "yarn"
+          cache-dependency-path: frontend/yarn.lock
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build
+        run: yarn build
+
+      - name: Deploy to IONOS Deploy Now
+        uses: ionos-deploy-now/deploy-action@v1
+        with:
+          api-key: ${{ secrets.IONOS_DEPLOY_NOW_API_KEY }}
+          service-host: api-eu.ionos.space
+          project-id: ${{ vars.IONOS_PROJECT_ID }}
+          branch-id: ${{ vars.IONOS_BRANCH_ID }}
+          remote-host: ${{ vars.IONOS_REMOTE_HOST }}
+          dist-folder: frontend/build

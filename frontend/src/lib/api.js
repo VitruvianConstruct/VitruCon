@@ -1,71 +1,53 @@
-import axios from "axios";
+// Static-mode helpers. The site is generated from JSON in src/content/.
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-export const API = `${BACKEND_URL}/api`;
+// Resolve image paths. In static mode all images live under /content/images/
+// (served by the React build). Pass-through for absolute URLs.
+export const resolveImage = (url) => url;
 
-export const api = axios.create({ baseURL: API });
+// Map JSON site content into the shape Hero/Manifesto/Footer expect.
+// This keeps the existing components untouched.
+export function buildSettings(site) {
+  if (!site) return {};
+  return {
+    // Hero / CTA
+    tagline: site.tagline,
+    hero_overline: site.hero?.overline,
+    hero_title: site.hero?.title,
+    hero_body: site.hero?.body,
+    hero_secondary_cta_label: site.hero?.secondary_cta_label,
 
-// Make /api/uploads/xxx URLs absolute using REACT_APP_BACKEND_URL.
-export const resolveImage = (url) => {
-  if (!url) return url;
-  if (url.startsWith("/api/")) return `${BACKEND_URL}${url}`;
-  return url;
-};
+    // Glyph
+    glyph_image: site.glyph?.image || null,
+    glyph_top_label: site.glyph?.top_label,
+    glyph_bottom_label: site.glyph?.bottom_label,
+    glyph_spin: site.glyph?.spin !== false,
 
-export const getSitePayload = () => api.get("/site").then((r) => r.data);
-export const subscribe = (email) => api.post("/subscribe", { email }).then((r) => r.data);
-export const listConceptArt = (category) =>
-  api.get("/concept-art", { params: category && category !== "all" ? { category } : {} }).then((r) => r.data);
+    // Manifesto
+    manifesto_overline: site.manifesto?.overline,
+    manifesto_heading: site.manifesto?.heading,
+    manifesto_body: site.manifesto?.body,
+    manifesto_tags: site.manifesto?.tags || [],
+    manifesto_image: site.manifesto?.image,
+    manifesto_caption: site.manifesto?.caption,
 
-// Admin
-export const adminHeaders = (pw) => ({ "X-Admin-Password": pw });
-export const adminVerify = (pw) => api.post("/admin/verify", null, { headers: adminHeaders(pw) }).then((r) => r.data);
+    // Fragments section copy
+    fragments_overline: site.fragments_section?.overline,
+    fragments_heading: site.fragments_section?.heading,
+    fragments_per_load: site.fragments_section?.per_load || 3,
 
-export const adminCreateProject = (pw, data) =>
-  api.post("/admin/projects", data, { headers: adminHeaders(pw) }).then((r) => r.data);
-export const adminUpdateProject = (pw, id, data) =>
-  api.put(`/admin/projects/${id}`, data, { headers: adminHeaders(pw) }).then((r) => r.data);
-export const adminDeleteProject = (pw, id) =>
-  api.delete(`/admin/projects/${id}`, { headers: adminHeaders(pw) }).then((r) => r.data);
+    // Channels section copy
+    channels_overline: site.channels_section?.overline,
+    channels_heading: site.channels_section?.heading,
+    channels_intro: site.channels_section?.intro,
+    channels: site.channels || {},
 
-export const adminCreateArt = (pw, data) =>
-  api.post("/admin/concept-art", data, { headers: adminHeaders(pw) }).then((r) => r.data);
-export const adminUpdateArt = (pw, id, data) =>
-  api.put(`/admin/concept-art/${id}`, data, { headers: adminHeaders(pw) }).then((r) => r.data);
-export const adminDeleteArt = (pw, id) =>
-  api.delete(`/admin/concept-art/${id}`, { headers: adminHeaders(pw) }).then((r) => r.data);
+    // Footer
+    footer: site.footer || {},
 
-export const adminCreateUpdate = (pw, data) =>
-  api.post("/admin/updates", data, { headers: adminHeaders(pw) }).then((r) => r.data);
-export const adminUpdateUpdate = (pw, id, data) =>
-  api.put(`/admin/updates/${id}`, data, { headers: adminHeaders(pw) }).then((r) => r.data);
-export const adminDeleteUpdate = (pw, id) =>
-  api.delete(`/admin/updates/${id}`, { headers: adminHeaders(pw) }).then((r) => r.data);
+    // Social URLs (also exposed at top level for legacy components)
+    social: site.social || {},
 
-// Fragments
-export const adminListFragments = (pw) =>
-  api.get("/admin/fragments", { headers: adminHeaders(pw) }).then((r) => r.data);
-export const adminCreateFragment = (pw, data) =>
-  api.post("/admin/fragments", data, { headers: adminHeaders(pw) }).then((r) => r.data);
-export const adminUpdateFragment = (pw, id, data) =>
-  api.put(`/admin/fragments/${id}`, data, { headers: adminHeaders(pw) }).then((r) => r.data);
-export const adminDeleteFragment = (pw, id) =>
-  api.delete(`/admin/fragments/${id}`, { headers: adminHeaders(pw) }).then((r) => r.data);
-
-export const adminSubscribers = (pw) =>
-  api.get("/admin/subscribers", { headers: adminHeaders(pw) }).then((r) => r.data);
-
-export const adminGetSettings = (pw) =>
-  api.get("/admin/settings", { headers: adminHeaders(pw) }).then((r) => r.data);
-export const adminUpdateSettings = (pw, data) =>
-  api.put("/admin/settings", data, { headers: adminHeaders(pw) }).then((r) => r.data);
-
-export const adminUpload = (pw, file) => {
-  const fd = new FormData();
-  fd.append("file", file);
-  return api
-    .post("/admin/upload", fd, {
-      headers: { ...adminHeaders(pw), "Content-Type": "multipart/form-data" },
-    })
-    .then((r) => r.data);
-};
+    // Newsletter
+    newsletter: site.newsletter || {},
+  };
+}

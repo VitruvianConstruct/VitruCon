@@ -1,0 +1,32 @@
+# IONOS Deploy Now serves files via Apache. This rewrites all unknown paths
+# to /index.html so React Router's client-side routes (e.g. /admin) work
+# instead of returning 404 on direct hits / reloads.
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # If the requested file or directory does not exist, fall back to index.html
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>
+
+# Long-cache hashed build assets (CRA fingerprints filenames in /static/)
+<IfModule mod_expires.c>
+  ExpiresActive On
+  <FilesMatch "\.(?:js|css|woff2?|ttf|otf|eot|png|jpe?g|gif|webp|svg|ico)$">
+    ExpiresDefault "access plus 1 year"
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  # Never cache the entry HTML
+  <FilesMatch "\.(?:html|htm)$">
+    ExpiresDefault "access plus 0 seconds"
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+  </FilesMatch>
+</IfModule>
+
+# Gzip the text-y stuff
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/css text/javascript application/javascript application/json image/svg+xml
+</IfModule>
